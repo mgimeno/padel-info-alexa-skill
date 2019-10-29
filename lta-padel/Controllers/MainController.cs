@@ -2,12 +2,11 @@
 using lta_padel.Enums;
 using lta_padel.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Linq;
 using System;
 using lta_padel.Helpers;
+using System.Collections.Generic;
 
 namespace lta_padel.Controllers
 {
@@ -24,12 +23,6 @@ namespace lta_padel.Controllers
         [HttpGet]
         public ActionResult<string> GetTopPlayers([FromQuery] int topNumberOfPlayers, int rankingTypeId)
         {
-
-            if (!DataInMemory.Rankings.Any())
-            {
-                return ErrorWhenNoDataIsAvailable;
-            }
-
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
 
             if (ranking == null || ranking.Players.Count == 0)
@@ -58,12 +51,6 @@ namespace lta_padel.Controllers
         [HttpGet]
         public ActionResult<string> GetPlayerAtPosition([FromQuery] int position, int rankingTypeId)
         {
-
-            if (!DataInMemory.Rankings.Any())
-            {
-                return ErrorWhenNoDataIsAvailable;
-            }
-
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
 
             if (ranking == null || ranking.Players.Count == 0)
@@ -169,18 +156,11 @@ namespace lta_padel.Controllers
 
             if (tables.Any())
             {
-                DataInMemory.Rankings.Clear();
-
                 var rankingTypeId = 0;
 
                 foreach (var table in tables)
                 {
-                    var ranking = new RankingModel
-                    {
-                        Type = (RankingTypeEnum)rankingTypeId
-                    };
-
-                    StoreRankingData(table, ranking);
+                    StoreRankingData(table, rankingTypeId);
 
                     rankingTypeId++;
                 }
@@ -218,11 +198,11 @@ namespace lta_padel.Controllers
 
         }
 
-
-
-        private void StoreRankingData(HtmlNode tableNode, RankingModel ranking)
+        private void StoreRankingData(HtmlNode tableNode, int rankingTypeId)
         {
             var playersNodes = tableNode.SelectNodes(".//tbody/tr");
+
+            var players = new List<PlayerModel>();
 
             var nodeCount = 0;
 
@@ -239,7 +219,7 @@ namespace lta_padel.Controllers
                     if (positionNode != null && int.TryParse(positionNode.InnerText, out int result) && nameNode != null && pointsNode != null)
                     {
 
-                        ranking.Players.Add(new PlayerModel
+                        players.Add(new PlayerModel
                         {
                             Position = int.Parse(positionNode.InnerText),
                             Name = nameNode.InnerText,
@@ -255,10 +235,8 @@ namespace lta_padel.Controllers
                 nodeCount++;
             }
 
-            if (ranking.Players.Any())
-            {
-                DataInMemory.Rankings.Add(ranking);
-            }
+            
+            DataInMemory.Rankings[rankingTypeId].Players = players;
         }
 
 
