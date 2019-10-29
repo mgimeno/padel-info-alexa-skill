@@ -135,7 +135,7 @@ namespace lta_padel.Controllers
 
         private string GetFormattedTextDate(DateTime date)
         {
-            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at { date.ToString("h:m tt")}";
+            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at {date.ToString( ("h" + (date.Minute != 0 ? ":m" : "") + " tt") )}";
         }
 
         private async Task<HtmlDocument> GetHtmlDocument(string url)
