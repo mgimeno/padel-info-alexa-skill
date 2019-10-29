@@ -100,7 +100,7 @@ namespace lta_padel.Controllers
             }
 
             return $"The next tournament is {DataInMemory.NextTournament.Name}, " +
-                $"on {GetTextDate(DataInMemory.NextTournament.Date)}";
+                $"on {GetFormattedTextDate(DataInMemory.NextTournament.Date)}";
 
         }
 
@@ -114,7 +114,7 @@ namespace lta_padel.Controllers
             }
             else
             {
-                return $"My records were last updated on {GetTextDate(DataInMemory.LastUpdateDate.Value)}";
+                return $"My records were last updated on {GetFormattedTextDate(DataInMemory.LastUpdateDate.Value)}";
             }
 
         }
@@ -133,7 +133,7 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(r => r.Players).Count()} players. Next Tournament is {DataInMemory.NextTournament.Name} at {DataInMemory.NextTournament.Date.ToLongDateString()}";
+                return $"OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(r => r.Players).Count()} total number of players. Next Tournament is {DataInMemory.NextTournament.Name} on {GetFormattedTextDate(DataInMemory.NextTournament.Date)}";
 
             }
             catch (Exception ex)
@@ -146,7 +146,7 @@ namespace lta_padel.Controllers
 
         }
 
-        private string GetTextDate(DateTime date)
+        private string GetFormattedTextDate(DateTime date)
         {
             return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at { date.ToString("h:m tt")}";
         }
