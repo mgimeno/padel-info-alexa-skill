@@ -1,0 +1,1 @@
+﻿0 * * * * flock -xn /home/pi/Websites/lta-padel/CronJobs/update-data.lck -c /home/pi/Websites/lta-padel/CronJobs/update-data.sh >> /dev/null 2>&1
