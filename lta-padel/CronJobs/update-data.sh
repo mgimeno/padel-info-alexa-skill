@@ -1,1 +1,1 @@
-﻿curl http://127.0.0.1:38000/api/updateData
+curl http://127.0.0.1:38000/api/updateData
