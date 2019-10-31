@@ -97,7 +97,7 @@ namespace lta_padel.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<string>> UpdateData()
+        public async Task<ActionResult<string>> UpdateLTAPadelData()
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 

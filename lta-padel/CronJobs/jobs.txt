@@ -1,1 +1,3 @@
-﻿0 * * * * flock -xn /home/pi/Websites/lta-padel/CronJobs/update-data.lck -c /home/pi/Websites/lta-padel/CronJobs/update-data.sh >> /dev/null 2>&1
+﻿0 * * * * flock -xn /home/pi/Websites/lta-padel/CronJobs/update-lta-padel-data.lck -c /home/pi/Websites/lta-padel/CronJobs/update-lta-padel-data.sh >> /dev/null 2>&1
+
+30 * * * * flock -xn /home/pi/Websites/lta-padel/CronJobs/update-world-padel-tour-ranking.lck -c /home/pi/Websites/world-padel-tour-ranking-script.py >> /dev/null 2>&1

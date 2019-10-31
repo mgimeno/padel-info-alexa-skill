@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CronJobs\update-data.sh">
+    <None Update="CronJobs\update-lta-padel-data.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="start.sh">
