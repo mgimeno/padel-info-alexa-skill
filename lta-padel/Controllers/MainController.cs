@@ -76,8 +76,8 @@ namespace lta_padel.Controllers
                 return NoDataIsAvailableMessage;
             }
 
-            return $"The next tournament is {ranking.NextTournament.Name}, " +
-                $"on {GetFormattedTextDate(ranking.NextTournament.Date)}";
+            return $"The next tournament is {ranking.NextTournament.Name} " +
+                $"{(ranking.NextTournament.Date.HasValue ? $", on {GetFormattedTextDate(ranking.NextTournament.Date.Value)}" : "")}";
 
         }
 
@@ -159,10 +159,14 @@ namespace lta_padel.Controllers
 
             try
             {
+                if (!HttpContext.Request.Form.Files.Any())
+                {
+                    return DataIsEmptyMessage;
+                }
+
                 var file = HttpContext.Request.Form.Files[0] as IFormFile;
 
-                if (file == null || file.Length == 0)
-                {
+                if (file == null || file.Length == 0) {
                     return DataIsEmptyMessage;
                 }
 
