@@ -75,6 +75,7 @@ namespace lta_padel.Helpers
                 .Replace("ú", "u")
                 .Replace("ü", "u")
                 //.Replace("ñ", "n")
+                .Trim()
                 ;
         }
 

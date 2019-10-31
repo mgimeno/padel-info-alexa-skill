@@ -29,7 +29,8 @@ namespace lta_padel.Controllers
         {
             var result = string.Empty;
 
-            for (int position = 1; position <= numberOfTopPositions; position++) {
+            for (int position = 1; position <= numberOfTopPositions; position++)
+            {
 
                 result += GetPlayersAtPosition(rankingTypeId, rankingCategoryId, position);
 
@@ -58,8 +59,6 @@ namespace lta_padel.Controllers
 
             return CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
         }
-
-
 
         [HttpGet]
         public ActionResult<string> GetNextTournament([FromQuery] int rankingTypeId)
@@ -124,50 +123,56 @@ namespace lta_padel.Controllers
 
         }
 
-        [HttpPost]
-        //public string UpdateWorldPadelTourRanking([FromBody] HtmlWebsiteModel model)
-        public string UpdateWorldPadelTourRanking()
+        [HttpGet]
+        public string UpdateWorldPadelTourRankingFromLocalFile()
         {
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
-                //if (string.IsNullOrWhiteSpace(model.Html))
-                //{
-                //    return DataIsEmptyMessage;
-                //}
+                var fileReader = System.IO.File.OpenText("C:\\dev\\world-padel-tour-html.txt");
+                var html = fileReader.ReadToEnd();
 
+                UpdateWorldPadelTourRanking(html);
 
-                //var file = HttpContext.Request.Form.Files[0] as IFormFile;
+                watch.Stop();
+                var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                var fileReader = System.IO.File.OpenText("C:\\dev\\test.txt");
+                return $"UpdateWorldPadelTourRanking. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(c => c.Categories).SelectMany(r => r.Players).Count()} total number of players.";
 
-                //var stream = file.OpenReadStream();
-                var html = "";
-                //using (var reader = new StreamReader(stream, Encoding.UTF8))
-                //{
-                    html = fileReader.ReadToEnd();
-                //}
+            }
+            catch (Exception ex)
+            {
+                watch.Stop();
+                var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
+                return $"UpdateWorldPadelTourRanking. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+            }
+        }
 
+        [HttpPost]
+        public string UpdateWorldPadelTourRankingFromFileUpload()
+        {
 
-                var doc = new HtmlDocument();
-                //doc.LoadHtml(model.Html);
-                doc.LoadHtml(html);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                if (doc == null)
+            try
+            {
+                var file = HttpContext.Request.Form.Files[0] as IFormFile;
+
+                if (file == null || file.Length == 0)
                 {
                     return DataIsEmptyMessage;
                 }
 
-                var mensBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[0];
-                StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
+                var html = "";
+                using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+                {
+                    html = reader.ReadToEnd();
+                }
 
-                var ladiesBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[1];
-                StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
-
-                DataInMemory.LastUpdateDate = DateTime.Now;
+                UpdateWorldPadelTourRanking(html);
 
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
@@ -183,6 +188,11 @@ namespace lta_padel.Controllers
                 return $"UpdateWorldPadelTourRanking. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
             }
 
+        }
+
+        [Produces("application/json")]
+        public IActionResult Info() {
+            return Ok(DataInMemory);
         }
 
         private string GetFormattedTextDate(DateTime date)
@@ -219,6 +229,7 @@ namespace lta_padel.Controllers
                 }
 
                 DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].LastUpdateDate = DateTime.Now;
+                DataInMemory.LastUpdateDate = DateTime.Now;
             }
         }
 
@@ -341,9 +352,25 @@ namespace lta_padel.Controllers
             DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories[rankingCategoryTypeId].Players = players;
         }
 
-        
+        private void UpdateWorldPadelTourRanking(string html)
+        {
+            var doc = new HtmlDocument();
 
-        
+            doc.LoadHtml(html);
+
+            var mensBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[0];
+            StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
+
+            var ladiesBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[1];
+            StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
+
+            DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].LastUpdateDate = DateTime.Now;
+            DataInMemory.LastUpdateDate = DateTime.Now;
+        }
+
+
+
+
     }
 
 }
