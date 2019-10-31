@@ -7,6 +7,9 @@ using System.Linq;
 using System;
 using lta_padel.Helpers;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Text;
 
 namespace lta_padel.Controllers
 {
@@ -14,81 +17,49 @@ namespace lta_padel.Controllers
     [ApiController]
     public class MainController : ControllerBase
     {
-        private const string RankingsUrl = "https://www.britishpadel.org.uk/rankings/";
-        private const string NextTournamentUrl = "https://www.britishpadel.org.uk/";
-        private const int FirstTableRowThatContainsAPlayerIndex = 4;
-        private const string ErrorWhenNoDataIsAvailable = "Sorry, data is not available at the moment. Try again after a few minutes.";
+        private const string LTAPadelRankingsUrl = "https://www.britishpadel.org.uk/rankings/";
+        private const string LTAPadelNextTournamentUrl = "https://www.britishpadel.org.uk/";
+        private const int LTAPadelFirstTableRowThatContainsAPlayerIndex = 4;
+        private const string NoDataIsAvailableMessage = "Sorry, data is not available at the moment. Try again after a few minutes.";
+        private const string DataIsEmptyMessage = "Data is empty";
         private static DataModel DataInMemory = new DataModel();
 
         [HttpGet]
-        public ActionResult<string> GetTopPlayers([FromQuery] int rankingTypeId, int topNumberOfPlayers, int rankingCategoryId)
+        public ActionResult<string> GetPlayersAtPositions([FromQuery] int rankingTypeId, int rankingCategoryId, int numberOfTopPositions)
         {
-            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
+            var result = string.Empty;
 
-            if (ranking == null)
-            {
-                return ErrorWhenNoDataIsAvailable;
-            }
+            for (int position = 1; position <= numberOfTopPositions; position++) {
 
-            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
-
-            if (rankingCategory == null || !rankingCategory.Players.Any()) {
-                return ErrorWhenNoDataIsAvailable;
-            }
-
-            var result = "The number one is ";
-
-            foreach (var player in rankingCategory.Players.Where(p => p.Position <= topNumberOfPlayers).OrderBy(p => p.Position))
-            {
-
-                if (player.Position > 1)
-                {
-                    result += "Number " + (player.Position) + " is ";
-                }
-
-                result += (player.Name + " " + player.Surname + " from " + player.Country + ", with " + player.Points + " points. ");
+                result += GetPlayersAtPosition(rankingTypeId, rankingCategoryId, position);
 
             }
-
 
             return result;
+
         }
 
         [HttpGet]
-        public ActionResult<string> GetPlayerAtPosition([FromQuery] int rankingTypeId, int position, int rankingCategoryId)
+        public ActionResult<string> GetPlayersAtPosition([FromQuery] int rankingTypeId, int rankingCategoryId, int position)
         {
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
 
             if (ranking == null)
             {
-                return ErrorWhenNoDataIsAvailable;
+                return NoDataIsAvailableMessage;
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
             if (rankingCategory == null || !rankingCategory.Players.Any())
             {
-                return ErrorWhenNoDataIsAvailable;
+                return NoDataIsAvailableMessage;
             }
 
-
-            var playersAtPosition = rankingCategory.Players.Where(p => p.Position == position).ToList();
-
-            if (!playersAtPosition.Any())
-            {
-                return "No player is in number " + position;
-            }
-
-            var result = "Number " + position + " is ";
-
-            foreach (var player in rankingCategory.Players.Where(p => p.Position == position))
-            {
-                result += (player.Name + " " + player.Surname + " from " + player.Country + ", with " + player.Points + " points. ");
-            }
-
-
-            return result;
+            return CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
         }
+
+
 
         [HttpGet]
         public ActionResult<string> GetNextTournament([FromQuery] int rankingTypeId)
@@ -98,12 +69,12 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return ErrorWhenNoDataIsAvailable;
+                return NoDataIsAvailableMessage;
             }
 
             if (string.IsNullOrWhiteSpace(ranking.NextTournament.Name))
             {
-                return ErrorWhenNoDataIsAvailable;
+                return NoDataIsAvailableMessage;
             }
 
             return $"The next tournament is {ranking.NextTournament.Name}, " +
@@ -117,7 +88,7 @@ namespace lta_padel.Controllers
 
             if (DataInMemory.LastUpdateDate == null)
             {
-                return ErrorWhenNoDataIsAvailable;
+                return NoDataIsAvailableMessage;
             }
             else
             {
@@ -140,7 +111,7 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(c=> c.Categories).SelectMany(r => r.Players).Count()} total number of players.";
+                return $"UpdateData. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(c => c.Categories).SelectMany(r => r.Players).Count()} total number of players.";
 
             }
             catch (Exception ex)
@@ -148,14 +119,75 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+                return $"UpdateData. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+            }
+
+        }
+
+        [HttpPost]
+        //public string UpdateWorldPadelTourRanking([FromBody] HtmlWebsiteModel model)
+        public string UpdateWorldPadelTourRanking()
+        {
+
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            try
+            {
+                //if (string.IsNullOrWhiteSpace(model.Html))
+                //{
+                //    return DataIsEmptyMessage;
+                //}
+
+
+                //var file = HttpContext.Request.Form.Files[0] as IFormFile;
+
+                var fileReader = System.IO.File.OpenText("C:\\dev\\test.txt");
+
+                //var stream = file.OpenReadStream();
+                var html = "";
+                //using (var reader = new StreamReader(stream, Encoding.UTF8))
+                //{
+                    html = fileReader.ReadToEnd();
+                //}
+
+
+
+                var doc = new HtmlDocument();
+                //doc.LoadHtml(model.Html);
+                doc.LoadHtml(html);
+
+                if (doc == null)
+                {
+                    return DataIsEmptyMessage;
+                }
+
+                var mensBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[0];
+                StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
+
+                var ladiesBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[1];
+                StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
+
+                DataInMemory.LastUpdateDate = DateTime.Now;
+
+                watch.Stop();
+                var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateWorldPadelTourRanking. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(c => c.Categories).SelectMany(r => r.Players).Count()} total number of players.";
+
+            }
+            catch (Exception ex)
+            {
+                watch.Stop();
+                var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateWorldPadelTourRanking. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
             }
 
         }
 
         private string GetFormattedTextDate(DateTime date)
         {
-            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at {date.ToString( ("h" + (date.Minute != 0 ? ":m" : "") + " tt") )}";
+            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}";
         }
 
         private async Task<HtmlDocument> GetHtmlDocument(string url)
@@ -168,7 +200,8 @@ namespace lta_padel.Controllers
 
         private async Task UpdateLTARankings()
         {
-            var doc = await GetHtmlDocument(RankingsUrl);
+
+            var doc = await GetHtmlDocument(LTAPadelRankingsUrl);
 
             var categoriesCount = DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count;
 
@@ -180,16 +213,18 @@ namespace lta_padel.Controllers
 
                 foreach (var tableNode in tableNodes)
                 {
-                    StoreLTARankingData(tableNode, rankingCategoryTypeId);
+                    StoreLTAPAdelCategory(tableNode, rankingCategoryTypeId);
 
                     rankingCategoryTypeId++;
                 }
+
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].LastUpdateDate = DateTime.Now;
             }
         }
 
         private async Task UpdateLTANextTournament()
         {
-            var doc = await GetHtmlDocument(NextTournamentUrl);
+            var doc = await GetHtmlDocument(LTAPadelNextTournamentUrl);
 
             var h3 = doc.DocumentNode.SelectNodes("//h3")[0];
             var link = h3.SelectSingleNode(".//a");
@@ -218,9 +253,53 @@ namespace lta_padel.Controllers
 
         }
 
-        private void StoreLTARankingData(HtmlNode tableNode, int rankingCategoryTypeId)
+        private void StoreWorldPadelTourCategory(HtmlNode categoryBlockNode, int rankingCategoryTypeId)
         {
-            var playersNodes = tableNode.SelectNodes(".//tbody/tr");
+            if (categoryBlockNode != null)
+            {
+                var playersNodes = categoryBlockNode.SelectNodes(".//*[@class='c-player-card__item']");
+
+                if (playersNodes != null)
+                {
+                    var players = new List<PlayerModel>();
+
+                    foreach (var playerNode in playersNodes)
+                    {
+                        var positionNode = playerNode.SelectSingleNode(".//*[@class='c-player-card__position']");
+                        var nameNode = playerNode.SelectSingleNode(".//*[@class='c-player-card__name']");
+                        var flagNode = playerNode.SelectSingleNode(".//*[@class='c-player-card__flag']");
+                        var pointsNode = playerNode.SelectSingleNode(".//*[@class='c-player-card__score']");
+
+                        if (positionNode != null
+                            && !string.IsNullOrWhiteSpace(positionNode.InnerText)
+                            && int.TryParse(positionNode.InnerText, out int result)
+                            && nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerText)
+                            && pointsNode != null && !string.IsNullOrWhiteSpace(pointsNode.InnerText))
+                        {
+                            var flagCode = flagNode.Attributes.FirstOrDefault(a => a.Name == "src")?.Value.Replace("https://www.worldpadeltour.com/media/images/flags/", "").Replace(".png", "");
+
+                            var country = CommonHelper.GetCountryNameFromFlagName(flagCode);
+
+                            players.Add(new PlayerModel
+                            {
+                                Position = int.Parse(positionNode.InnerText),
+                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerHtml.Replace("<br>", " ")),
+                                Country = CommonHelper.GetCleanedUpText(country),
+                                Points = pointsNode.InnerText
+                            });
+
+                        }
+
+                    }
+
+                    DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].Categories[rankingCategoryTypeId].Players = players;
+                }
+            }
+        }
+
+        private void StoreLTAPAdelCategory(HtmlNode categoryTableNode, int rankingCategoryTypeId)
+        {
+            var playersNodes = categoryTableNode.SelectNodes(".//tbody/tr");
 
             var players = new List<PlayerModel>();
 
@@ -228,7 +307,7 @@ namespace lta_padel.Controllers
 
             foreach (var playerNode in playersNodes)
             {
-                if (nodeCount >= FirstTableRowThatContainsAPlayerIndex)
+                if (nodeCount >= LTAPadelFirstTableRowThatContainsAPlayerIndex)
                 {
                     var positionNode = playerNode.SelectSingleNode(".//td[1]");
                     var nameNode = playerNode.SelectSingleNode(".//td[2]");
@@ -236,15 +315,18 @@ namespace lta_padel.Controllers
                     var countryNode = playerNode.SelectSingleNode(".//td[4]");
                     var pointsNode = playerNode.SelectSingleNode(".//td[5]");
 
-                    if (positionNode != null && int.TryParse(positionNode.InnerText, out int result) && nameNode != null && pointsNode != null)
+                    if (positionNode != null
+                            && !string.IsNullOrWhiteSpace(positionNode.InnerText)
+                            && int.TryParse(positionNode.InnerText, out int result)
+                            && nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerText)
+                            && pointsNode != null && !string.IsNullOrWhiteSpace(pointsNode.InnerText))
                     {
 
                         players.Add(new PlayerModel
                         {
                             Position = int.Parse(positionNode.InnerText),
-                            Name = nameNode.InnerText,
-                            Surname = surnameNode?.InnerText,
-                            Country = countryNode?.InnerText,
+                            FullName = nameNode.InnerText + (surnameNode != null && string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + CommonHelper.GetCleanedUpText(surnameNode.InnerText) : ""),
+                            Country = (countryNode != null ? CommonHelper.GetCleanedUpText(countryNode.InnerText) : ""),
                             Points = pointsNode.InnerText
                         });
 
@@ -259,6 +341,9 @@ namespace lta_padel.Controllers
             DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories[rankingCategoryTypeId].Players = players;
         }
 
+        
 
+        
     }
+
 }
