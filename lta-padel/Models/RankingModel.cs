@@ -10,6 +10,6 @@ namespace lta_padel.Models
         public DateTime? LastUpdateDate { get; set; } = null;
         public List<RankingCategoryModel> Categories { get; set; }  = new List<RankingCategoryModel>();
 
-        public TournamentModel NextTournament { get; set; } = new TournamentModel();
+        public List<TournamentModel> Tournaments { get; set; } = new List<TournamentModel>();
     }
 }

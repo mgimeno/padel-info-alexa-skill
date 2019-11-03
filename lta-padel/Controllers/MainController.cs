@@ -18,7 +18,7 @@ namespace lta_padel.Controllers
     public class MainController : ControllerBase
     {
         private const string LTAPadelRankingsUrl = "https://www.britishpadel.org.uk/rankings/";
-        private const string LTAPadelNextTournamentUrl = "https://www.britishpadel.org.uk/";
+        private const string LTAPadelTournamentsUrl = "https://www.britishpadel.org.uk/tournaments/";
         private const int LTAPadelFirstTableRowThatContainsAPlayerIndex = 4;
         private const string NoDataIsAvailableMessage = "Sorry, data is not available at the moment. Try again after a few minutes.";
         private const string DataIsEmptyMessage = "Data is empty";
@@ -61,7 +61,7 @@ namespace lta_padel.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetNextTournament([FromQuery] int rankingTypeId)
+        public ActionResult<string> GetTournaments([FromQuery] int rankingTypeId)
         {
 
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
@@ -71,13 +71,44 @@ namespace lta_padel.Controllers
                 return NoDataIsAvailableMessage;
             }
 
-            if (string.IsNullOrWhiteSpace(ranking.NextTournament.Name))
+            if (!ranking.Tournaments.Any())
             {
                 return NoDataIsAvailableMessage;
             }
 
-            return $"The next tournament is {ranking.NextTournament.Name} " +
-                $"{(ranking.NextTournament.Date.HasValue ? $", on {GetFormattedTextDate(ranking.NextTournament.Date.Value)}" : "")}";
+            var now = DateTime.Now;
+
+            var result = string.Empty;
+
+            //todo improve this check
+            var currentTournaments = ranking.Tournaments.Where(t => t.StartDate <= now && t.EndDate >= now).ToList();
+
+            if (currentTournaments.Any())
+            {
+
+                result += "Playing now";
+
+                foreach (var currentTournament in currentTournaments)
+                {
+                    result += $". {currentTournament.Name} {(!string.IsNullOrWhiteSpace(currentTournament.Location) ? $"in {currentTournament.Location}" : "")} from {CommonHelper.GetFormattedTextDate(currentTournament.StartDate)} to {CommonHelper.GetFormattedTextDate(currentTournament.EndDate)}";
+                }
+            }
+
+            //todo improve this check
+            var futureTournaments = ranking.Tournaments.Where(t => t.StartDate >= now && !currentTournaments.Contains(t)).ToList();
+
+            if (futureTournaments.Any())
+            {
+
+                result += "Next tournaments";
+
+                foreach (var futureTournament in futureTournaments)
+                {
+                    result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"in {futureTournament.Location}" : "")} from {CommonHelper.GetFormattedTextDate(futureTournament.StartDate)} to {CommonHelper.GetFormattedTextDate(futureTournament.EndDate)}";
+                }
+            }
+
+            return result;
 
         }
 
@@ -91,26 +122,132 @@ namespace lta_padel.Controllers
             }
             else
             {
-                return $"My records were last updated on {GetFormattedTextDate(DataInMemory.LastUpdateDate.Value)}";
+                return $"My records were last updated on {CommonHelper.GetFormattedTextDate(DataInMemory.LastUpdateDate.Value)}";
             }
 
         }
 
         [HttpGet]
-        public async Task<ActionResult<string>> UpdateLTAPadelData()
+        public async Task<ActionResult<string>> UpdateLTAPadelTournaments()
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            long elapsedSeconds;
+            HtmlNode debugNode = null; //todo delete
+
+            try
+            {
+                var doc = await GetHtmlDocument(LTAPadelTournamentsUrl);
+
+
+                var tournamentCardsNodes = doc.DocumentNode.SelectNodes("//*[@id='av_section_2']//section");
+
+                if (!tournamentCardsNodes.Any())
+                {
+                    watch.Stop();
+                    elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                    return $"UpdateLTAPadelTournaments. NO TOURNAMENTS FOUND (executing for {elapsedSeconds} seconds).";
+                }
+
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments = new List<TournamentModel>();
+                var now = DateTime.Now;
+
+                foreach (var tournamentCardNote in tournamentCardsNodes)
+                {
+                    debugNode = tournamentCardNote;
+                    if (debugNode.Line == 325)
+                    {
+                        var debugThisOne = true;
+                    }
+
+                    //todo some of them contain h3 instead... 
+                    var h4Nodes = tournamentCardNote.SelectNodes(".//h4");
+                    var pNodes = tournamentCardNote.SelectNodes(".//p");
+
+                    if (h4Nodes != null && h4Nodes.Count == 2 && pNodes != null && pNodes.Count == 2)
+                    {
+                        var nameNode = tournamentCardNote.SelectNodes(".//h4")[0];
+                        var locationNode = tournamentCardNote.SelectNodes(".//h4")[1];
+                        var dateNode = tournamentCardNote.SelectNodes(".//p")[1];
+
+                        if (nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerHtml) && dateNode != null)
+                        {
+
+                            var dateModel = CommonHelper.ParseLTATournamentDates(dateNode.InnerText);
+
+                            if (dateModel.StartDate != null && dateModel.EndDate != null)
+                            {
+                                //todo improve this check
+                                if (dateModel.StartDate >= now || (dateModel.EndDate != null && dateModel.EndDate <= now))
+                                {
+                                    var tournament = new TournamentModel();
+                                    tournament.Name = nameNode.InnerHtml.Trim();
+                                    tournament.Location = (locationNode != null && !string.IsNullOrWhiteSpace(locationNode.InnerHtml) ? locationNode.InnerHtml.Trim() : null);
+                                    tournament.StartDate = dateModel.StartDate.Value;
+                                    tournament.EndDate = dateModel.EndDate.Value;
+
+                                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments.Add(tournament);
+
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+
+                DataInMemory.LastUpdateDate = DateTime.Now;
+
+                watch.Stop();
+                elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateLTAPadelTournaments. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments.Count} tournaments.";
+
+            }
+            catch (Exception ex)
+            {
+                watch.Stop();
+                elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateLTAPadelTournaments. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+            }
+
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<string>> UpdateLTAPadelRanking()
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
-                await UpdateLTARankings();
-                await UpdateLTANextTournament();
-                DataInMemory.LastUpdateDate = DateTime.Now;
+                var doc = await GetHtmlDocument(LTAPadelRankingsUrl);
+
+                var categoriesCount = DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count;
+
+                var tableNodes = doc.DocumentNode.SelectNodes("//table").Take(categoriesCount);
+
+                if (tableNodes.Any())
+                {
+                    var rankingCategoryTypeId = 0;
+
+                    foreach (var tableNode in tableNodes)
+                    {
+                        StoreLTAPAdelCategory(tableNode, rankingCategoryTypeId);
+
+                        rankingCategoryTypeId++;
+                    }
+
+                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].LastUpdateDate = DateTime.Now;
+                    DataInMemory.LastUpdateDate = DateTime.Now;
+                }
+
 
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"UpdateData. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings.Count} rankings. {DataInMemory.Rankings.SelectMany(c => c.Categories).SelectMany(r => r.Players).Count()} total number of players.";
+                return $"UpdateLTAPadelRanking. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count} categories. {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.SelectMany(r => r.Players).Count()} total number of players.";
 
             }
             catch (Exception ex)
@@ -118,7 +255,7 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"UpdateData. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+                return $"UpdateLTAPadelRanking. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
             }
 
         }
@@ -166,7 +303,8 @@ namespace lta_padel.Controllers
 
                 var file = HttpContext.Request.Form.Files[0] as IFormFile;
 
-                if (file == null || file.Length == 0) {
+                if (file == null || file.Length == 0)
+                {
                     return DataIsEmptyMessage;
                 }
 
@@ -195,14 +333,12 @@ namespace lta_padel.Controllers
         }
 
         [Produces("application/json")]
-        public IActionResult Info() {
+        public IActionResult Info()
+        {
             return Ok(DataInMemory);
         }
 
-        private string GetFormattedTextDate(DateTime date)
-        {
-            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}, at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}";
-        }
+
 
         private async Task<HtmlDocument> GetHtmlDocument(string url)
         {
@@ -210,62 +346,6 @@ namespace lta_padel.Controllers
             var doc = await web.LoadFromWebAsync(url);
 
             return doc;
-        }
-
-        private async Task UpdateLTARankings()
-        {
-
-            var doc = await GetHtmlDocument(LTAPadelRankingsUrl);
-
-            var categoriesCount = DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count;
-
-            var tableNodes = doc.DocumentNode.SelectNodes("//table").Take(categoriesCount);
-
-            if (tableNodes.Any())
-            {
-                var rankingCategoryTypeId = 0;
-
-                foreach (var tableNode in tableNodes)
-                {
-                    StoreLTAPAdelCategory(tableNode, rankingCategoryTypeId);
-
-                    rankingCategoryTypeId++;
-                }
-
-                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].LastUpdateDate = DateTime.Now;
-                DataInMemory.LastUpdateDate = DateTime.Now;
-            }
-        }
-
-        private async Task UpdateLTANextTournament()
-        {
-            var doc = await GetHtmlDocument(LTAPadelNextTournamentUrl);
-
-            var h3 = doc.DocumentNode.SelectNodes("//h3")[0];
-            var link = h3.SelectSingleNode(".//a");
-            var dateObject = doc.DocumentNode.SelectNodes("//*[@data-year]")[0];
-
-            if (h3 != null && link != null && dateObject != null)
-            {
-                var name = link.InnerText.Replace("Upcoming: ", null).Replace("&#8211;", null).Trim();
-
-                var yearValue = dateObject.Attributes.FirstOrDefault(a => a.Name == "data-year")?.Value;
-                var monthValue = dateObject.Attributes.FirstOrDefault(a => a.Name == "data-month")?.Value;
-                var dayValue = dateObject.Attributes.FirstOrDefault(a => a.Name == "data-day")?.Value;
-                var hoursValue = dateObject.Attributes.FirstOrDefault(a => a.Name == "data-hour")?.Value;
-                var minutesValue = dateObject.Attributes.FirstOrDefault(a => a.Name == "data-minute")?.Value;
-
-                if (!string.IsNullOrWhiteSpace(name))
-                {
-                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].NextTournament = new TournamentModel();
-                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].NextTournament.Name = name;
-
-                    var date = new DateTime(int.Parse(yearValue), (int.Parse(monthValue) + 1), int.Parse(dayValue), int.Parse(hoursValue), int.Parse(minutesValue), 0);
-                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].NextTournament.Date = date;
-                }
-
-            }
-
         }
 
         private void StoreWorldPadelTourCategory(HtmlNode categoryBlockNode, int rankingCategoryTypeId)

@@ -1,5 +1,6 @@
 ﻿
 using lta_padel.Models;
+using System;
 using System.Linq;
 
 namespace lta_padel.Helpers
@@ -19,6 +20,109 @@ namespace lta_padel.Helpers
                 default: work += "th"; break;
             }
             return work;
+        }
+
+        public static DateStartEndModel ParseLTATournamentDates(string text)
+        {
+            var result = new DateStartEndModel();
+
+            var yearNumber = DateTime.Now.Year;
+
+            text = text
+                .ToLower()
+                .Replace("th", "")
+                .Replace("st", "")
+                .Replace("nd", "")
+                .Replace("rd", "")
+                .Replace("&#038;", "&")
+                .Replace("&#8211;", "&");
+
+            var dates = text.Split("-");
+            if (dates.Length == 1)
+            {
+                dates = text.Split("&");
+            }
+
+            var startDateText = dates[0].Trim();
+            var endDateText = dates[1].Trim();
+
+            var startDateMonthText = startDateText.Substring(0, 3);
+
+            var startDateMonthNumber = GetMonthNumber(startDateMonthText);
+
+            startDateText = startDateText.Substring(3).Trim(); // remove start date month 
+
+            var startDateDayNumber = int.Parse(startDateText);
+
+            result.StartDate = new DateTime(yearNumber, startDateMonthNumber, startDateDayNumber);
+
+
+            if (endDateText.Length <= 2)
+            {
+                //Just day, so month is the same.
+                result.EndDate = new DateTime(yearNumber, startDateMonthNumber, int.Parse(endDateText));
+            }
+            else
+            {
+                //contains month
+                endDateText = endDateText.Substring(3).Trim(); // remove end date month 
+                result.EndDate = new DateTime(yearNumber, (startDateMonthNumber + 1), int.Parse(endDateText));
+            }
+
+            return result;
+
+        }
+        private static int GetMonthNumber(string text)
+        {
+            text = text.ToLower();
+
+            switch (text)
+            {
+                case "jan":
+                    return 1;
+                    break;
+                case "feb":
+                    return 2;
+                    break;
+                case "mar":
+                    return 3;
+                    break;
+                case "apr":
+                    return 4;
+                    break;
+                case "may":
+                    return 5;
+                    break;
+                case "jun":
+                    return 6;
+                    break;
+                case "jul":
+                    return 7;
+                    break;
+                case "aug":
+                    return 8;
+                    break;
+                case "sep":
+                    return 9;
+                    break;
+                case "oct":
+                    return 10;
+                    break;
+                case "nov":
+                    return 11;
+                    break;
+                case "dec":
+                    return 12;
+                    break;
+            }
+
+            return -1;
+
+        }
+
+        public static string GetFormattedTextDate(DateTime date, bool includeTime = false)
+        {
+            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}{(includeTime ?  $", at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}" : "")}";
         }
 
         public static string GetPlayersAtPositionText(RankingCategoryModel rankingCategory, int position)
