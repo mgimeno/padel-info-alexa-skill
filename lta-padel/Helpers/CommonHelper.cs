@@ -22,6 +22,14 @@ namespace lta_padel.Helpers
             return work;
         }
 
+        public static bool IsToday(DateTime date) {
+
+            var now = DateTime.Now;
+
+            return (date.Year == now.Year && date.Month == now.Month && date.Day == now.Day);
+
+        }
+
         public static DateStartEndModel ParseLTATournamentDates(string text)
         {
             var result = new DateStartEndModel();
@@ -55,19 +63,19 @@ namespace lta_padel.Helpers
 
             var startDateDayNumber = int.Parse(startDateText);
 
-            result.StartDate = new DateTime(yearNumber, startDateMonthNumber, startDateDayNumber);
+            result.StartDate = new DateTime(yearNumber, startDateMonthNumber, startDateDayNumber,0,0,0,0);
 
 
             if (endDateText.Length <= 2)
             {
                 //Just day, so month is the same.
-                result.EndDate = new DateTime(yearNumber, startDateMonthNumber, int.Parse(endDateText));
+                result.EndDate = new DateTime(yearNumber, startDateMonthNumber, int.Parse(endDateText), 23, 59, 59, 999);
             }
             else
             {
                 //contains month
                 endDateText = endDateText.Substring(3).Trim(); // remove end date month 
-                result.EndDate = new DateTime(yearNumber, (startDateMonthNumber + 1), int.Parse(endDateText));
+                result.EndDate = new DateTime(yearNumber, (startDateMonthNumber + 1), int.Parse(endDateText), 23, 59, 59, 999);
             }
 
             return result;
@@ -90,8 +98,8 @@ namespace lta_padel.Helpers
             var startDateParts = startDateText.Split("/");
             var endDateParts = endDateText.Split("/");
 
-            result.StartDate = new DateTime(int.Parse(startDateParts[2]), int.Parse(startDateParts[1]), int.Parse(startDateParts[0]));
-            result.EndDate = new DateTime(int.Parse(endDateParts[2]), int.Parse(endDateParts[1]), int.Parse(endDateParts[0]));
+            result.StartDate = new DateTime(int.Parse(startDateParts[2]), int.Parse(startDateParts[1]), int.Parse(startDateParts[0]), 0,0,0,0);
+            result.EndDate = new DateTime(int.Parse(endDateParts[2]), int.Parse(endDateParts[1]), int.Parse(endDateParts[0]), 23,59,59,999);
 
             return result;
         }

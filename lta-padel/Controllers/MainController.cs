@@ -83,8 +83,10 @@ namespace lta_padel.Controllers
 
             var result = string.Empty;
 
-            //todo improve this check
-            var currentTournaments = ranking.Tournaments.Where(t => t.StartDate <= now && t.EndDate >= now).ToList();
+            var currentTournaments = ranking.Tournaments
+                .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
+                .OrderBy(t=> t.StartDate)
+                .ToList();
 
             if (currentTournaments.Any())
             {
@@ -98,17 +100,24 @@ namespace lta_padel.Controllers
             }
 
             //todo improve this check
-            var futureTournaments = ranking.Tournaments.Where(t => t.StartDate >= now && !currentTournaments.Contains(t)).ToList();
+            var futureTournaments = ranking.Tournaments
+                .Where(t => !CommonHelper.IsToday(t.StartDate) && t.StartDate >= now && !currentTournaments.Contains(t))
+                .OrderBy(t => t.StartDate)
+                .ToList();
 
             if (futureTournaments.Any())
             {
 
-                result += "Next tournaments";
+                result += $"{(!string.IsNullOrWhiteSpace(result) ? ". " : "")}Future tournaments";
 
                 foreach (var futureTournament in futureTournaments)
                 {
                     result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"in {futureTournament.Location}" : "")} from {CommonHelper.GetFormattedTextDate(futureTournament.StartDate)} to {CommonHelper.GetFormattedTextDate(futureTournament.EndDate)}";
                 }
+            }
+
+            if (string.IsNullOrWhiteSpace(result)) {
+                return NoDataIsAvailableMessage;
             }
 
             return result;
@@ -180,8 +189,8 @@ namespace lta_padel.Controllers
 
                             if (dateModel.StartDate != null && dateModel.EndDate != null)
                             {
-                                //todo improve this check
-                                if (dateModel.StartDate >= now || (dateModel.EndDate != null && dateModel.EndDate <= now))
+         
+                                if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
                                     tournament.Name = nameNode.InnerHtml.Trim();
@@ -384,8 +393,7 @@ namespace lta_padel.Controllers
 
                             if (dateModel.StartDate != null && dateModel.EndDate != null)
                             {
-                                //todo improve this check
-                                if (dateModel.StartDate >= now || (dateModel.EndDate != null && dateModel.EndDate <= now))
+                                if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
                                     tournament.Name = nameNode.InnerHtml.Trim();
