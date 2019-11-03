@@ -23,6 +23,8 @@ namespace lta_padel.Controllers
 
         private const string WorldPadelTourTournamentsUrl = "https://www.worldpadeltour.com/torneos/";
 
+        private const int MaximumNumberOfFutureTournamentsToReturn = 5;
+
         private const string NoDataIsAvailableMessage = "Sorry, data is not available at the moment. Try again after a few minutes.";
         private const string DataIsEmptyMessage = "Data is empty";
         private static DataModel DataInMemory = new DataModel();
@@ -99,10 +101,11 @@ namespace lta_padel.Controllers
                 }
             }
 
-            //todo improve this check
+            
             var futureTournaments = ranking.Tournaments
                 .Where(t => !CommonHelper.IsToday(t.StartDate) && t.StartDate >= now && !currentTournaments.Contains(t))
                 .OrderBy(t => t.StartDate)
+                .Take(MaximumNumberOfFutureTournamentsToReturn)
                 .ToList();
 
             if (futureTournaments.Any())
