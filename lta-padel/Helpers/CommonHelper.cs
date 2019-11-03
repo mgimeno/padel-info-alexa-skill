@@ -35,7 +35,8 @@ namespace lta_padel.Helpers
                 .Replace("nd", "")
                 .Replace("rd", "")
                 .Replace("&#038;", "&")
-                .Replace("&#8211;", "&");
+                .Replace("&#8211;", "&")
+                .Trim();
 
             var dates = text.Split("-");
             if (dates.Length == 1)
@@ -71,6 +72,28 @@ namespace lta_padel.Helpers
 
             return result;
 
+        }
+
+        public static DateStartEndModel ParseWorldPadelTourTournamentDates(string text) {
+            var result = new DateStartEndModel();
+
+            text = text
+                .ToLower()
+                .Replace("del ", "")
+                .Trim();
+
+            var dates = text.Split(" al ");
+
+            var startDateText = dates[0];
+            var endDateText = dates[1];
+
+            var startDateParts = startDateText.Split("/");
+            var endDateParts = endDateText.Split("/");
+
+            result.StartDate = new DateTime(int.Parse(startDateParts[2]), int.Parse(startDateParts[1]), int.Parse(startDateParts[0]));
+            result.EndDate = new DateTime(int.Parse(endDateParts[2]), int.Parse(endDateParts[1]), int.Parse(endDateParts[0]));
+
+            return result;
         }
         private static int GetMonthNumber(string text)
         {

@@ -20,6 +20,9 @@ namespace lta_padel.Controllers
         private const string LTAPadelRankingsUrl = "https://www.britishpadel.org.uk/rankings/";
         private const string LTAPadelTournamentsUrl = "https://www.britishpadel.org.uk/tournaments/";
         private const int LTAPadelFirstTableRowThatContainsAPlayerIndex = 4;
+
+        private const string WorldPadelTourTournamentsUrl = "https://www.worldpadeltour.com/torneos/";
+
         private const string NoDataIsAvailableMessage = "Sorry, data is not available at the moment. Try again after a few minutes.";
         private const string DataIsEmptyMessage = "Data is empty";
         private static DataModel DataInMemory = new DataModel();
@@ -141,7 +144,7 @@ namespace lta_padel.Controllers
 
                 var tournamentCardsNodes = doc.DocumentNode.SelectNodes("//*[@id='av_section_2']//section");
 
-                if (!tournamentCardsNodes.Any())
+                if (tournamentCardsNodes == null || !tournamentCardsNodes.Any())
                 {
                     watch.Stop();
                     elapsedSeconds = watch.ElapsedMilliseconds / 1000;
@@ -228,7 +231,7 @@ namespace lta_padel.Controllers
 
                 var tableNodes = doc.DocumentNode.SelectNodes("//table").Take(categoriesCount);
 
-                if (tableNodes.Any())
+                if (tableNodes != null && tableNodes.Any())
                 {
                     var rankingCategoryTypeId = 0;
 
@@ -332,6 +335,93 @@ namespace lta_padel.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult<string>> UpdateWorldPadelTourTournaments()
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            long elapsedSeconds;
+            HtmlNode debugNode = null; //todo delete
+
+            try
+            {
+                var doc = await GetHtmlDocument(WorldPadelTourTournamentsUrl);
+
+
+                var tournamentCardsNodes = doc.DocumentNode.SelectNodes("//*[@class='c-tournaments__container']");
+
+                if (tournamentCardsNodes == null || !tournamentCardsNodes.Any())
+                {
+                    watch.Stop();
+                    elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                    return $"UpdateWorldPadelTourTournaments. NO TOURNAMENTS FOUND (executing for {elapsedSeconds} seconds).";
+                }
+
+                DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].Tournaments = new List<TournamentModel>();
+                var now = DateTime.Now;
+
+                foreach (var tournamentCardNote in tournamentCardsNodes)
+                {
+                    debugNode = tournamentCardNote;
+                    if (debugNode.Line == 325)
+                    {
+                        var debugThisOne = true;
+                    }
+
+                    var h3Nodes = tournamentCardNote.SelectNodes(".//h3");
+                    var pNodes = tournamentCardNote.SelectNodes(".//p");
+
+                    if (h3Nodes != null && h3Nodes.Count == 1 && pNodes != null && pNodes.Count == 2)
+                    {
+                        var nameNode = tournamentCardNote.SelectNodes(".//h3")[0];
+                        var dateNode = tournamentCardNote.SelectNodes(".//p")[0];
+
+                        if (nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerHtml) && dateNode != null)
+                        {
+
+                            var dateModel = CommonHelper.ParseWorldPadelTourTournamentDates(dateNode.InnerText);
+
+                            if (dateModel.StartDate != null && dateModel.EndDate != null)
+                            {
+                                //todo improve this check
+                                if (dateModel.StartDate >= now || (dateModel.EndDate != null && dateModel.EndDate <= now))
+                                {
+                                    var tournament = new TournamentModel();
+                                    tournament.Name = nameNode.InnerHtml.Trim();
+                                    tournament.Location = null;
+                                    tournament.StartDate = dateModel.StartDate.Value;
+                                    tournament.EndDate = dateModel.EndDate.Value;
+
+                                    DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].Tournaments.Add(tournament);
+
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+
+                DataInMemory.LastUpdateDate = DateTime.Now;
+
+                watch.Stop();
+                elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateWorldPadelTourTournaments. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].Tournaments.Count} tournaments.";
+
+            }
+            catch (Exception ex)
+            {
+                watch.Stop();
+                elapsedSeconds = watch.ElapsedMilliseconds / 1000;
+
+                return $"UpdateWorldPadelTourTournaments. Error occurred (executing for {elapsedSeconds} seconds): " + ex.Message + " | Inner Exception: " + ex.InnerException?.Message;
+            }
+
+        }
+
         [Produces("application/json")]
         public IActionResult Info()
         {
@@ -354,7 +444,7 @@ namespace lta_padel.Controllers
             {
                 var playersNodes = categoryBlockNode.SelectNodes(".//*[@class='c-player-card__item']");
 
-                if (playersNodes != null)
+                if (playersNodes != null && playersNodes.Any())
                 {
                     var players = new List<PlayerModel>();
 
@@ -396,44 +486,49 @@ namespace lta_padel.Controllers
         {
             var playersNodes = categoryTableNode.SelectNodes(".//tbody/tr");
 
-            var players = new List<PlayerModel>();
-
-            var nodeCount = 0;
-
-            foreach (var playerNode in playersNodes)
+            if (playersNodes != null && playersNodes.Any())
             {
-                if (nodeCount >= LTAPadelFirstTableRowThatContainsAPlayerIndex)
+
+                var players = new List<PlayerModel>();
+
+                var nodeCount = 0;
+
+                foreach (var playerNode in playersNodes)
                 {
-                    var positionNode = playerNode.SelectSingleNode(".//td[1]");
-                    var nameNode = playerNode.SelectSingleNode(".//td[2]");
-                    var surnameNode = playerNode.SelectSingleNode(".//td[3]");
-                    var countryNode = playerNode.SelectSingleNode(".//td[4]");
-                    var pointsNode = playerNode.SelectSingleNode(".//td[5]");
-
-                    if (positionNode != null
-                            && !string.IsNullOrWhiteSpace(positionNode.InnerText)
-                            && int.TryParse(positionNode.InnerText, out int result)
-                            && nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerText)
-                            && pointsNode != null && !string.IsNullOrWhiteSpace(pointsNode.InnerText))
+                    if (nodeCount >= LTAPadelFirstTableRowThatContainsAPlayerIndex)
                     {
+                        var positionNode = playerNode.SelectSingleNode(".//td[1]");
+                        var nameNode = playerNode.SelectSingleNode(".//td[2]");
+                        var surnameNode = playerNode.SelectSingleNode(".//td[3]");
+                        var countryNode = playerNode.SelectSingleNode(".//td[4]");
+                        var pointsNode = playerNode.SelectSingleNode(".//td[5]");
 
-                        players.Add(new PlayerModel
+                        if (positionNode != null
+                                && !string.IsNullOrWhiteSpace(positionNode.InnerText)
+                                && int.TryParse(positionNode.InnerText, out int result)
+                                && nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerText)
+                                && pointsNode != null && !string.IsNullOrWhiteSpace(pointsNode.InnerText))
                         {
-                            Position = int.Parse(positionNode.InnerText),
-                            FullName = nameNode.InnerText + (surnameNode != null && string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + CommonHelper.GetCleanedUpText(surnameNode.InnerText) : ""),
-                            Country = (countryNode != null ? CommonHelper.GetCleanedUpText(countryNode.InnerText) : ""),
-                            Points = pointsNode.InnerText
-                        });
+
+                            players.Add(new PlayerModel
+                            {
+                                Position = int.Parse(positionNode.InnerText),
+                                FullName = nameNode.InnerText + (surnameNode != null && string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + CommonHelper.GetCleanedUpText(surnameNode.InnerText) : ""),
+                                Country = (countryNode != null ? CommonHelper.GetCleanedUpText(countryNode.InnerText) : ""),
+                                Points = pointsNode.InnerText
+                            });
+
+                        }
 
                     }
 
+                    nodeCount++;
                 }
 
-                nodeCount++;
+
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories[rankingCategoryTypeId].Players = players;
+
             }
-
-
-            DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories[rankingCategoryTypeId].Players = players;
         }
 
         private void UpdateWorldPadelTourRanking(string html)
@@ -443,17 +538,18 @@ namespace lta_padel.Controllers
             doc.LoadHtml(html);
 
             var mensBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[0];
-            StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
-
             var ladiesBlockNode = doc.DocumentNode.SelectNodes("//*[@class='c-ranking__block']")[1];
-            StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
 
-            DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].LastUpdateDate = DateTime.Now;
-            DataInMemory.LastUpdateDate = DateTime.Now;
+            if (mensBlockNode != null && ladiesBlockNode != null)
+            {
+                StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
+                StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
+
+                DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].LastUpdateDate = DateTime.Now;
+                DataInMemory.LastUpdateDate = DateTime.Now;
+            }
+
         }
-
-
-
 
     }
 

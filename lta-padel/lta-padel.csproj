@@ -16,6 +16,9 @@
     <None Update="CronJobs\lta-padel-update-ranking.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="CronJobs\world-padel-tour-update-tournaments.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="CronJobs\lta-padel-update-tournaments.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
