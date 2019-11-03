@@ -170,18 +170,17 @@ namespace lta_padel.Helpers
             if (playersAtPosition.Count == 1)
             {
                 result = "Number " + position + " is " + playersAtPosition[0].FullName + (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " from " + playersAtPosition[0].Country : "") + ", with " + playersAtPosition[0].Points + " points.";
-                result = "Number " + position + " is " + playersAtPosition[0].FullName + (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " from " + playersAtPosition[0].Country : "") + ", with " + playersAtPosition[0].Points + " points.";
             }
             else
             {
-                result = $"{playersAtPosition.Count} players at number {position} ";
+                result = $"{playersAtPosition.Count} players at number {position}";
 
                 foreach (var playerAtPosition in playersAtPosition)
                 {
-                    result += (playerAtPosition.FullName + (!string.IsNullOrWhiteSpace(playerAtPosition.Country) ? " from " + playerAtPosition.Country : "") + ".");
+                    result += ". " + (playerAtPosition.FullName + (!string.IsNullOrWhiteSpace(playerAtPosition.Country) ? " from " + playerAtPosition.Country : ""));
                 }
 
-                result += $". All of them with {playersAtPosition[0].Points}.";
+                result += $". All of them with {playersAtPosition[0].Points} points. ";
             }
 
             return result;

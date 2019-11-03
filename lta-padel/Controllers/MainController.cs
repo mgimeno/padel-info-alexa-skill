@@ -37,7 +37,7 @@ namespace lta_padel.Controllers
             for (int position = 1; position <= numberOfTopPositions; position++)
             {
 
-                result += GetPlayersAtPosition(rankingTypeId, rankingCategoryId, position);
+                result += GetPlayersAtPositionText(rankingTypeId, rankingCategoryId, position);
 
             }
 
@@ -48,22 +48,9 @@ namespace lta_padel.Controllers
         [HttpGet]
         public ActionResult<string> GetPlayersAtPosition([FromQuery] int rankingTypeId, int rankingCategoryId, int position)
         {
-            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
-
-            if (ranking == null)
-            {
-                return NoDataIsAvailableMessage;
-            }
-
-            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
-
-            if (rankingCategory == null || !rankingCategory.Players.Any())
-            {
-                return NoDataIsAvailableMessage;
-            }
-
-            return CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
+            return GetPlayersAtPositionText(rankingTypeId, rankingCategoryId, position);
         }
+        
 
         [HttpGet]
         public ActionResult<string> GetTournaments([FromQuery] int rankingTypeId)
@@ -561,6 +548,25 @@ namespace lta_padel.Controllers
                 DataInMemory.LastUpdateDate = DateTime.Now;
             }
 
+        }
+
+        private string GetPlayersAtPositionText(int rankingTypeId, int rankingCategoryId, int position)
+        {
+            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
+
+            if (ranking == null)
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
+
+            if (rankingCategory == null || !rankingCategory.Players.Any())
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            return CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
         }
 
     }
