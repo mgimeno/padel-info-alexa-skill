@@ -87,7 +87,7 @@ namespace lta_padel.Controllers
 
             var currentTournaments = ranking.Tournaments
                 .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
-                .OrderBy(t=> t.StartDate)
+                .OrderBy(t => t.StartDate)
                 .ToList();
 
             if (currentTournaments.Any())
@@ -101,7 +101,7 @@ namespace lta_padel.Controllers
                 }
             }
 
-            
+
             var futureTournaments = ranking.Tournaments
                 .Where(t => !CommonHelper.IsToday(t.StartDate) && t.StartDate >= now && !currentTournaments.Contains(t))
                 .OrderBy(t => t.StartDate)
@@ -119,7 +119,8 @@ namespace lta_padel.Controllers
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(result)) {
+            if (string.IsNullOrWhiteSpace(result))
+            {
                 return NoDataIsAvailableMessage;
             }
 
@@ -192,12 +193,12 @@ namespace lta_padel.Controllers
 
                             if (dateModel.StartDate != null && dateModel.EndDate != null)
                             {
-         
+
                                 if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
-                                    tournament.Name = nameNode.InnerHtml.Trim();
-                                    tournament.Location = (locationNode != null && !string.IsNullOrWhiteSpace(locationNode.InnerHtml) ? locationNode.InnerHtml.Trim() : null);
+                                    tournament.Name = CommonHelper.GetCleanedUpText(nameNode.InnerHtml);
+                                    tournament.Location = CommonHelper.GetCleanedUpText(locationNode != null && !string.IsNullOrWhiteSpace(locationNode.InnerHtml) ? locationNode.InnerHtml : null);
                                     tournament.StartDate = dateModel.StartDate.Value;
                                     tournament.EndDate = dateModel.EndDate.Value;
 
@@ -249,7 +250,7 @@ namespace lta_padel.Controllers
 
                     foreach (var tableNode in tableNodes)
                     {
-                        StoreLTAPAdelCategory(tableNode, rankingCategoryTypeId);
+                        StoreLTAPadelCategory(tableNode, rankingCategoryTypeId);
 
                         rankingCategoryTypeId++;
                     }
@@ -399,7 +400,7 @@ namespace lta_padel.Controllers
                                 if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
-                                    tournament.Name = nameNode.InnerHtml.Trim();
+                                    tournament.Name = CommonHelper.GetCleanedUpText(nameNode.InnerHtml);
                                     tournament.Location = null;
                                     tournament.StartDate = dateModel.StartDate.Value;
                                     tournament.EndDate = dateModel.EndDate.Value;
@@ -493,7 +494,7 @@ namespace lta_padel.Controllers
             }
         }
 
-        private void StoreLTAPAdelCategory(HtmlNode categoryTableNode, int rankingCategoryTypeId)
+        private void StoreLTAPadelCategory(HtmlNode categoryTableNode, int rankingCategoryTypeId)
         {
             var playersNodes = categoryTableNode.SelectNodes(".//tbody/tr");
 
@@ -524,8 +525,8 @@ namespace lta_padel.Controllers
                             players.Add(new PlayerModel
                             {
                                 Position = int.Parse(positionNode.InnerText),
-                                FullName = nameNode.InnerText + (surnameNode != null && string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + CommonHelper.GetCleanedUpText(surnameNode.InnerText) : ""),
-                                Country = (countryNode != null ? CommonHelper.GetCleanedUpText(countryNode.InnerText) : ""),
+                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerText + (surnameNode != null && !string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + surnameNode.InnerText : "")),
+                                Country = CommonHelper.GetCleanedUpText(countryNode != null ? countryNode.InnerText : ""),
                                 Points = pointsNode.InnerText
                             });
 
