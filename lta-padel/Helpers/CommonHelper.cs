@@ -156,7 +156,7 @@ namespace lta_padel.Helpers
             return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}{(includeTime ?  $", at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}" : "")}";
         }
 
-        public static string GetPlayersAtPositionText(RankingCategoryModel rankingCategory, int position)
+        public static string GetPlayersAtPositionText(int languageId, RankingCategoryModel rankingCategory, int position)
         {
             var playersAtPosition = rankingCategory.Players.Where(p => p.Position == position).ToList();
 

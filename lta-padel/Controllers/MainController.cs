@@ -30,15 +30,27 @@ namespace lta_padel.Controllers
         private static DataModel DataInMemory = new DataModel();
 
         [HttpGet]
-        public ActionResult<string> GetPlayersAtPositions([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int numberOfTopPositions = 1)
+        public ActionResult<string> GetPlayersAtPositions([FromQuery] int languageId = (int)LanguageEnum.ENGLISH, int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int numberOfTopPositions = 1)
         {
-            var result = string.Empty;
+            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
+
+            if (ranking == null)
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
+
+            if (rankingCategory == null || !rankingCategory.Players.Any())
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            var result = $"{ranking.Name}. ";
 
             for (int position = 1; position <= numberOfTopPositions; position++)
             {
-
-                result += GetPlayersAtPositionText(rankingTypeId, rankingCategoryId, position);
-
+                result += CommonHelper.GetPlayersAtPositionText(languageId, rankingCategory, position);
             }
 
             return result;
@@ -46,14 +58,32 @@ namespace lta_padel.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetPlayersAtPosition([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int position = 1)
+        public ActionResult<string> GetPlayersAtPosition([FromQuery] int languageId = (int)LanguageEnum.ENGLISH, int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int position = 1)
         {
-            return GetPlayersAtPositionText(rankingTypeId, rankingCategoryId, position);
+            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
+
+            if (ranking == null)
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
+
+            if (rankingCategory == null || !rankingCategory.Players.Any())
+            {
+                return NoDataIsAvailableMessage;
+            }
+
+            var result = $"{ranking.Name}. ";
+
+            result += CommonHelper.GetPlayersAtPositionText(languageId, rankingCategory, position); 
+
+            return result;
         }
         
 
         [HttpGet]
-        public ActionResult<string> GetTournaments([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int numberOfFutureTournaments = 1)
+        public ActionResult<string> GetTournaments([FromQuery] int languageId = (int)LanguageEnum.ENGLISH, int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int numberOfFutureTournaments = 1)
         {
 
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
@@ -70,7 +100,7 @@ namespace lta_padel.Controllers
 
             var now = DateTime.Now;
 
-            var result = $"Tournaments on the {ranking.Name}. ";
+            var result = $"Tournaments on the {ranking.Name}";
 
             var currentTournaments = ranking.Tournaments
                 .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
@@ -80,7 +110,7 @@ namespace lta_padel.Controllers
             if (currentTournaments.Any())
             {
 
-                result += "Currently being held";
+                result += ". Currently being played";
 
                 foreach (var currentTournament in currentTournaments)
                 {
@@ -117,7 +147,7 @@ namespace lta_padel.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetLastUpdatedDate()
+        public ActionResult<string> GetLastUpdatedDate([FromQuery] int languageId = (int)LanguageEnum.ENGLISH)
         {
 
             if (DataInMemory.LastUpdateDate == null)
@@ -549,28 +579,7 @@ namespace lta_padel.Controllers
 
         }
 
-        private string GetPlayersAtPositionText(int rankingTypeId, int rankingCategoryId, int position)
-        {
-            var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
-
-            if (ranking == null)
-            {
-                return NoDataIsAvailableMessage;
-            }
-
-            var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
-
-            if (rankingCategory == null || !rankingCategory.Players.Any())
-            {
-                return NoDataIsAvailableMessage;
-            }
-
-            var result = $"{ranking.Name}. ";
-
-            result +=  CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
-
-            return result;
-        }
+        
 
     }
 
