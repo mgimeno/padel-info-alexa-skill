@@ -10,6 +10,7 @@ namespace lta_padel.Models
         public DataModel(){
 
             this.Rankings.Add(new RankingModel {
+                Name = "World Padel Tour",
                 Type = RankingTypeEnum.WORLD_PADEL_TOUR
             });
 
@@ -19,14 +20,15 @@ namespace lta_padel.Models
 
             this.Rankings.Add(new RankingModel
             {
-                Type = RankingTypeEnum.LTA_PADEL
+                Name = "L T A Padel Tour",
+                Type = RankingTypeEnum.LTA_PADEL_TOUR
             });
 
-            this.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Men });
-            this.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Ladies });
-            this.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.MenSenior }); 
-            this.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.LadiesSenior });
-            this.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Junior });
+            this.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Men });
+            this.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Ladies });
+            this.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.MenSenior }); 
+            this.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.LadiesSenior });
+            this.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Add(new RankingCategoryModel { Type = RankingCategoryTypeEnum.Junior });
 
         }
 

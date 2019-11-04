@@ -30,7 +30,7 @@ namespace lta_padel.Controllers
         private static DataModel DataInMemory = new DataModel();
 
         [HttpGet]
-        public ActionResult<string> GetPlayersAtPositions([FromQuery] int rankingTypeId, int rankingCategoryId, int numberOfTopPositions)
+        public ActionResult<string> GetPlayersAtPositions([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int numberOfTopPositions = 1)
         {
             var result = string.Empty;
 
@@ -46,14 +46,14 @@ namespace lta_padel.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetPlayersAtPosition([FromQuery] int rankingTypeId, int rankingCategoryId, int position)
+        public ActionResult<string> GetPlayersAtPosition([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int rankingCategoryId = (int)RankingCategoryTypeEnum.Men, int position = 1)
         {
             return GetPlayersAtPositionText(rankingTypeId, rankingCategoryId, position);
         }
         
 
         [HttpGet]
-        public ActionResult<string> GetTournaments([FromQuery] int rankingTypeId)
+        public ActionResult<string> GetTournaments([FromQuery] int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int numberOfFutureTournaments = 1)
         {
 
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
@@ -70,7 +70,7 @@ namespace lta_padel.Controllers
 
             var now = DateTime.Now;
 
-            var result = string.Empty;
+            var result = $"Tournaments on the {ranking.Name}. ";
 
             var currentTournaments = ranking.Tournaments
                 .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
@@ -80,7 +80,7 @@ namespace lta_padel.Controllers
             if (currentTournaments.Any())
             {
 
-                result += "Playing now";
+                result += "Currently being held";
 
                 foreach (var currentTournament in currentTournaments)
                 {
@@ -88,17 +88,18 @@ namespace lta_padel.Controllers
                 }
             }
 
+            numberOfFutureTournaments = Math.Min(numberOfFutureTournaments, MaximumNumberOfFutureTournamentsToReturn);
 
             var futureTournaments = ranking.Tournaments
                 .Where(t => !CommonHelper.IsToday(t.StartDate) && t.StartDate >= now && !currentTournaments.Contains(t))
                 .OrderBy(t => t.StartDate)
-                .Take(MaximumNumberOfFutureTournamentsToReturn)
+                .Take(numberOfFutureTournaments)
                 .ToList();
 
             if (futureTournaments.Any())
             {
 
-                result += $"{(!string.IsNullOrWhiteSpace(result) ? ". " : "")}Future tournaments";
+                result += $". Future tournaments";
 
                 foreach (var futureTournament in futureTournaments)
                 {
@@ -152,7 +153,7 @@ namespace lta_padel.Controllers
                     return $"UpdateLTAPadelTournaments. NO TOURNAMENTS FOUND (executing for {elapsedSeconds} seconds).";
                 }
 
-                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments = new List<TournamentModel>();
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Tournaments = new List<TournamentModel>();
                 var now = DateTime.Now;
 
                 foreach (var tournamentCardNote in tournamentCardsNodes)
@@ -189,7 +190,7 @@ namespace lta_padel.Controllers
                                     tournament.StartDate = dateModel.StartDate.Value;
                                     tournament.EndDate = dateModel.EndDate.Value;
 
-                                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments.Add(tournament);
+                                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Tournaments.Add(tournament);
 
                                 }
                             }
@@ -205,7 +206,7 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"UpdateLTAPadelTournaments. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Tournaments.Count} tournaments.";
+                return $"UpdateLTAPadelTournaments. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Tournaments.Count} tournaments.";
 
             }
             catch (Exception ex)
@@ -227,7 +228,7 @@ namespace lta_padel.Controllers
             {
                 var doc = await GetHtmlDocument(LTAPadelRankingsUrl);
 
-                var categoriesCount = DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count;
+                var categoriesCount = DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Count;
 
                 var tableNodes = doc.DocumentNode.SelectNodes("//table").Take(categoriesCount);
 
@@ -242,7 +243,7 @@ namespace lta_padel.Controllers
                         rankingCategoryTypeId++;
                     }
 
-                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].LastUpdateDate = DateTime.Now;
+                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].LastUpdateDate = DateTime.Now;
                     DataInMemory.LastUpdateDate = DateTime.Now;
                 }
 
@@ -250,7 +251,7 @@ namespace lta_padel.Controllers
                 watch.Stop();
                 var elapsedSeconds = watch.ElapsedMilliseconds / 1000;
 
-                return $"UpdateLTAPadelRanking. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.Count} categories. {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories.SelectMany(r => r.Players).Count()} total number of players.";
+                return $"UpdateLTAPadelRanking. OK (executing for {elapsedSeconds} seconds). {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.Count} categories. {DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories.SelectMany(r => r.Players).Count()} total number of players.";
 
             }
             catch (Exception ex)
@@ -427,8 +428,6 @@ namespace lta_padel.Controllers
             return Ok(DataInMemory);
         }
 
-
-
         private async Task<HtmlDocument> GetHtmlDocument(string url)
         {
             var web = new HtmlWeb();
@@ -525,7 +524,7 @@ namespace lta_padel.Controllers
                 }
 
 
-                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL].Categories[rankingCategoryTypeId].Players = players;
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].Categories[rankingCategoryTypeId].Players = players;
 
             }
         }
@@ -566,7 +565,11 @@ namespace lta_padel.Controllers
                 return NoDataIsAvailableMessage;
             }
 
-            return CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
+            var result = $"{ranking.Name}. ";
+
+            result +=  CommonHelper.GetPlayersAtPositionText(rankingCategory, position);
+
+            return result;
         }
 
     }

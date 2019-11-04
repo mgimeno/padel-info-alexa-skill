@@ -162,14 +162,14 @@ namespace lta_padel.Helpers
 
             if (!playersAtPosition.Any())
             {
-                return "No player is in number " + position;
+                return "No player is in number " + position + ". ";
             }
 
             var result = string.Empty;
 
             if (playersAtPosition.Count == 1)
             {
-                result = "Number " + position + " is " + playersAtPosition[0].FullName + (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " from " + playersAtPosition[0].Country : "") + ", with " + playersAtPosition[0].Points + " points.";
+                result = "Number " + position + " is " + playersAtPosition[0].FullName + (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " from " + playersAtPosition[0].Country : "") + ", with " + playersAtPosition[0].Points + " points. ";
             }
             else
             {
