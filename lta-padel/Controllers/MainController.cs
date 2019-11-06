@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Text;
+using lta_padel.Constants;
 
 namespace lta_padel.Controllers
 {
@@ -25,7 +26,6 @@ namespace lta_padel.Controllers
 
         private const int MaximumNumberOfFutureTournamentsToReturn = 5;
 
-        private const string NoDataIsAvailableMessage = "Sorry, data is not available at the moment. Try again after a few minutes.";
         private const string DataIsEmptyMessage = "Data is empty";
         private static DataModel DataInMemory = new DataModel();
 
@@ -36,14 +36,14 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
             if (rankingCategory == null || !rankingCategory.Players.Any())
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             var result = $"{ranking.Name}. ";
@@ -64,14 +64,14 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
             if (rankingCategory == null || !rankingCategory.Players.Any())
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             var result = $"{ranking.Name}. ";
@@ -90,17 +90,17 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             if (!ranking.Tournaments.Any())
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             var now = DateTime.Now;
 
-            var result = $"Tournaments on the {ranking.Name}";
+            var result = $"{Translations.Get(TranslationEnum.TOURNAMENTS_ON_THE, languageId)} {ranking.Name}";
 
             var currentTournaments = ranking.Tournaments
                 .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
@@ -110,11 +110,11 @@ namespace lta_padel.Controllers
             if (currentTournaments.Any())
             {
 
-                result += ". Currently being played";
+                result += $". {Translations.Get(TranslationEnum.CURRENTLY_BEING_PLAYED, languageId)}";
 
                 foreach (var currentTournament in currentTournaments)
                 {
-                    result += $". {currentTournament.Name} {(!string.IsNullOrWhiteSpace(currentTournament.Location) ? $"in {currentTournament.Location}" : "")} from {CommonHelper.GetFormattedTextDate(currentTournament.StartDate)} to {CommonHelper.GetFormattedTextDate(currentTournament.EndDate)}";
+                    result += $". {currentTournament.Name} {(!string.IsNullOrWhiteSpace(currentTournament.Location) ? $"{Translations.Get(TranslationEnum.IN, languageId)} {CommonHelper.TranslateLocation(languageId, currentTournament.Location)}" : "")} {Translations.Get(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.StartDate)} {Translations.Get(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.EndDate)}";
                 }
             }
 
@@ -129,17 +129,17 @@ namespace lta_padel.Controllers
             if (futureTournaments.Any())
             {
 
-                result += $". Future tournaments";
+                result += $". {Translations.Get(TranslationEnum.NEXT_TOURNAMENTS, languageId)}";
 
                 foreach (var futureTournament in futureTournaments)
                 {
-                    result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"in {futureTournament.Location}" : "")} from {CommonHelper.GetFormattedTextDate(futureTournament.StartDate)} to {CommonHelper.GetFormattedTextDate(futureTournament.EndDate)}";
+                    result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"{Translations.Get(TranslationEnum.IN, languageId)} {CommonHelper.TranslateLocation(languageId, futureTournament.Location)}" : "")} {Translations.Get(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.StartDate)} {Translations.Get(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.EndDate)}";
                 }
             }
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
 
             return result;
@@ -152,11 +152,11 @@ namespace lta_padel.Controllers
 
             if (DataInMemory.LastUpdateDate == null)
             {
-                return NoDataIsAvailableMessage;
+                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
             else
             {
-                return $"My records were last updated on {CommonHelper.GetFormattedTextDate(DataInMemory.LastUpdateDate.Value)}";
+                return $"{Translations.Get(TranslationEnum.RECORDS_LAST_UPDATED_ON, languageId)} {CommonHelper.GetFormattedTextDate(languageId, DataInMemory.LastUpdateDate.Value)}";
             }
 
         }
@@ -491,7 +491,7 @@ namespace lta_padel.Controllers
                         {
                             var flagCode = flagNode.Attributes.FirstOrDefault(a => a.Name == "src")?.Value.Replace("https://www.worldpadeltour.com/media/images/flags/", "").Replace(".png", "");
 
-                            var country = CommonHelper.GetCountryNameFromFlagName(flagCode);
+                            var country = CommonHelper.GetEnglishCountryNameFromFlagName(flagCode);
 
                             players.Add(new PlayerModel
                             {
@@ -578,9 +578,6 @@ namespace lta_padel.Controllers
             }
 
         }
-
-        
-
     }
 
 }

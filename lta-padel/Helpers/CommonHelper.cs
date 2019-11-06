@@ -1,6 +1,9 @@
 ﻿
+using lta_padel.Constants;
+using lta_padel.Enums;
 using lta_padel.Models;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace lta_padel.Helpers
@@ -22,7 +25,8 @@ namespace lta_padel.Helpers
             return work;
         }
 
-        public static bool IsToday(DateTime date) {
+        public static bool IsToday(DateTime date)
+        {
 
             var now = DateTime.Now;
 
@@ -63,7 +67,7 @@ namespace lta_padel.Helpers
 
             var startDateDayNumber = int.Parse(startDateText);
 
-            result.StartDate = new DateTime(yearNumber, startDateMonthNumber, startDateDayNumber,0,0,0,0);
+            result.StartDate = new DateTime(yearNumber, startDateMonthNumber, startDateDayNumber, 0, 0, 0, 0);
 
 
             if (endDateText.Length <= 2)
@@ -82,7 +86,8 @@ namespace lta_padel.Helpers
 
         }
 
-        public static DateStartEndModel ParseWorldPadelTourTournamentDates(string text) {
+        public static DateStartEndModel ParseWorldPadelTourTournamentDates(string text)
+        {
             var result = new DateStartEndModel();
 
             text = text
@@ -98,8 +103,8 @@ namespace lta_padel.Helpers
             var startDateParts = startDateText.Split("/");
             var endDateParts = endDateText.Split("/");
 
-            result.StartDate = new DateTime(int.Parse(startDateParts[2]), int.Parse(startDateParts[1]), int.Parse(startDateParts[0]), 0,0,0,0);
-            result.EndDate = new DateTime(int.Parse(endDateParts[2]), int.Parse(endDateParts[1]), int.Parse(endDateParts[0]), 23,59,59,999);
+            result.StartDate = new DateTime(int.Parse(startDateParts[2]), int.Parse(startDateParts[1]), int.Parse(startDateParts[0]), 0, 0, 0, 0);
+            result.EndDate = new DateTime(int.Parse(endDateParts[2]), int.Parse(endDateParts[1]), int.Parse(endDateParts[0]), 23, 59, 59, 999);
 
             return result;
         }
@@ -151,9 +156,17 @@ namespace lta_padel.Helpers
 
         }
 
-        public static string GetFormattedTextDate(DateTime date, bool includeTime = false)
+        public static string GetFormattedTextDate(int languageId, DateTime date, bool includeTime = false)
         {
-            return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}{(includeTime ?  $", at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}" : "")}";
+            if (languageId == (int)LanguageEnum.SPANISH)
+            {
+                var cultureInfo = new CultureInfo("es-ES");
+                return $"{ date.ToString("dddd", cultureInfo)}, { date.Day} de { date.ToString("MMMM", cultureInfo)} de { date.Year}{(includeTime ? $", a las {date.ToString(("H" + (date.Minute != 0 ? ":m" : "")))}" : "")}";
+            }
+            else
+            {
+                return $"{ date.ToString("dddd")}, the { date.Day.Ordinal()} of { date.ToString("MMMM")}, { date.Year}{(includeTime ? $", at {date.ToString(("h" + (date.Minute != 0 ? ":m" : "") + " tt"))}" : "")}";
+            }
         }
 
         public static string GetPlayersAtPositionText(int languageId, RankingCategoryModel rankingCategory, int position)
@@ -162,28 +175,167 @@ namespace lta_padel.Helpers
 
             if (!playersAtPosition.Any())
             {
-                return "No player is in number " + position + ". ";
+                return $"{Translations.Get(TranslationEnum.NO_PLAYER_IS_IN_NUMBER, languageId)} {position}. ";
             }
 
             var result = string.Empty;
 
             if (playersAtPosition.Count == 1)
             {
-                result = "Number " + position + " is " + playersAtPosition[0].FullName + (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " from " + playersAtPosition[0].Country : "") + ", with " + playersAtPosition[0].Points + " points. ";
+                var countryText = (!string.IsNullOrWhiteSpace(playersAtPosition[0].Country) ? " " + Translations.Get(TranslationEnum.FROM_LOCATION, languageId) + " " + TranslateLocation(languageId, playersAtPosition[0].Country) : "");
+
+                result = $"{Translations.Get(TranslationEnum.NUMBER, languageId)} {position} " +
+                    $"{Translations.Get(TranslationEnum.IS, languageId)} {playersAtPosition[0].FullName}{countryText}, {Translations.Get(TranslationEnum.WITH, languageId)} {playersAtPosition[0].Points} {Translations.Get(TranslationEnum.POINTS, languageId)}. ";
             }
             else
             {
-                result = $"{playersAtPosition.Count} players at number {position}";
+                result = $"{playersAtPosition.Count} {Translations.Get(TranslationEnum.PLAYERS_AT_NUMBER, languageId)} {position}";
 
                 foreach (var playerAtPosition in playersAtPosition)
                 {
-                    result += ". " + (playerAtPosition.FullName + (!string.IsNullOrWhiteSpace(playerAtPosition.Country) ? " from " + playerAtPosition.Country : ""));
+                    var countryText = (!string.IsNullOrWhiteSpace(playerAtPosition.Country) ? $" {Translations.Get(TranslationEnum.FROM_LOCATION, languageId)} " + TranslateLocation(languageId, playerAtPosition.Country) : "");
+                    result += $". {playerAtPosition.FullName}{countryText}";
                 }
 
-                result += $". All of them with {playersAtPosition[0].Points} points. ";
+                result += $". {Translations.Get(TranslationEnum.ALL_OF_THEM_WITH, languageId)} {playersAtPosition[0].Points} {Translations.Get(TranslationEnum.POINTS, languageId)}. ";
             }
 
             return result;
+        }
+
+        public static string TranslateLocation(int languageId, string location)
+        {
+            if (string.IsNullOrWhiteSpace(location))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                location = location.ToLower().Trim();
+
+                if (languageId == (int)LanguageEnum.ENGLISH)
+                {
+                    return location;
+                }
+                else
+                {
+                    //spanish
+
+                    var result = location;
+
+                    // replace tournament locations that have these as part of the location.
+                    result = result.Replace("england", "inglaterra");
+                    result = result.Replace("edinburgh", "edimburgo");
+                    result = result.Replace("london", "londres");
+
+                    switch (location)
+                    {
+                        case "european union":
+                            result = "la union Europea";
+                            break;
+                        case "northern ireland":
+                            result = "irlanda del norte";
+                            break;
+                        case "scotland":
+                            result = "escocia";
+                            break;
+                        case "wales":
+                            result = "gales";
+                            break;
+                        case "argentina":
+                            result = "la argentina";
+                            break;
+                        case "austria":
+                            result = "austria";
+                            break;
+                        case "australia":
+                            result = "australia";
+                            break;
+                        case "belgium":
+                            result = "belgica";
+                            break;
+                        case "bulgaria":
+                            result = "bulgaria";
+                            break;
+                        case "brazil":
+                            result = "brasil";
+                            break;
+                        case "switzerland":
+                            result = "suiza";
+                            break;
+                        case "chile":
+                            result = "chile";
+                            break;
+                        case "germany":
+                            result = "alemania";
+                            break;
+                        case "denmark":
+                            result = "dinamarca";
+                            break;
+                        case "spain":
+                            result = "españa";
+                            break;
+                        case "finland":
+                            result = "finlandia";
+                            break;
+                        case "france":
+                            result = "francia";
+                            break;
+                        case "united kingdom":
+                            result = "reino unido";
+                            break;
+                        case "ireland":
+                            result = "irlanda";
+                            break;
+                        case "italy":
+                            result = "italia";
+                            break;
+                        case "lithuania":
+                            result = "lituania";
+                            break;
+                        case "mexico":
+                            result = "mexico";
+                            break;
+                        case "the netherlands":
+                            result = "los paises bajos";
+                            break;
+                        case "norway":
+                            result = "noruega";
+                            break;
+                        case "poland":
+                            result = "polonia";
+                            break;
+                        case "portugal":
+                            result = "portugal";
+                            break;
+                        case "paraguay":
+                            result = "paraguay";
+                            break;
+                        case "qatar":
+                            result = "catar";
+                            break;
+                        case "russia":
+                            result = "rusia";
+                            break;
+                        case "sweden":
+                            result = "suecia";
+                            break;
+                        case "united states of america":
+                            result = "los estados unidos de america";
+                            break;
+                        case "uruguay":
+                            result = "uruguay";
+                            break;
+                        case "venezuela":
+                            result = "venezuela";
+                            break;
+
+                    }
+
+                    return result;
+                }
+
+            }
         }
 
         public static string GetCleanedUpText(string text)
@@ -213,7 +365,7 @@ namespace lta_padel.Helpers
                 ;
         }
 
-        public static string GetCountryNameFromFlagName(string flagName)
+        public static string GetEnglishCountryNameFromFlagName(string flagName)
         {
             //todo mirar cuales paises hay jugadores y me he dejado
 
