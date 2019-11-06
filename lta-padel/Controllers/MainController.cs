@@ -498,7 +498,7 @@ namespace lta_padel.Controllers
                                 Position = int.Parse(positionNode.InnerText),
                                 FullName = CommonHelper.GetCleanedUpText(nameNode.InnerHtml.Replace("<br>", " ")),
                                 Country = CommonHelper.GetCleanedUpText(country),
-                                Points = pointsNode.InnerText
+                                Points = pointsNode.InnerText.Replace(",","").Trim()
                             });
 
                         }
@@ -543,7 +543,7 @@ namespace lta_padel.Controllers
                                 Position = int.Parse(positionNode.InnerText),
                                 FullName = CommonHelper.GetCleanedUpText(nameNode.InnerText + (surnameNode != null && !string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + surnameNode.InnerText : "")),
                                 Country = CommonHelper.GetCleanedUpText(countryNode != null ? countryNode.InnerText : ""),
-                                Points = pointsNode.InnerText
+                                Points = pointsNode.InnerText.Replace(",", "").Trim()
                             });
 
                         }
