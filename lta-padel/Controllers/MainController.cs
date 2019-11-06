@@ -231,7 +231,8 @@ namespace lta_padel.Controllers
                 }
 
 
-                DataInMemory.LastUpdateDate = DateTime.Now;
+                DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].TournamentsLastUpdate = now;
+                DataInMemory.LastUpdateDate = now;
 
                 watch.Stop();
                 elapsedSeconds = watch.ElapsedMilliseconds / 1000;
@@ -273,7 +274,7 @@ namespace lta_padel.Controllers
                         rankingCategoryTypeId++;
                     }
 
-                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].LastUpdateDate = DateTime.Now;
+                    DataInMemory.Rankings[(int)RankingTypeEnum.LTA_PADEL_TOUR].RankingLastUpdate = DateTime.Now;
                     DataInMemory.LastUpdateDate = DateTime.Now;
                 }
 
@@ -433,8 +434,8 @@ namespace lta_padel.Controllers
 
                 }
 
-
-                DataInMemory.LastUpdateDate = DateTime.Now;
+                DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].TournamentsLastUpdate = now;
+                DataInMemory.LastUpdateDate = now;
 
                 watch.Stop();
                 elapsedSeconds = watch.ElapsedMilliseconds / 1000;
@@ -573,7 +574,7 @@ namespace lta_padel.Controllers
                 StoreWorldPadelTourCategory(mensBlockNode, (int)RankingCategoryTypeEnum.Men);
                 StoreWorldPadelTourCategory(ladiesBlockNode, (int)RankingCategoryTypeEnum.Ladies);
 
-                DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].LastUpdateDate = DateTime.Now;
+                DataInMemory.Rankings[(int)RankingTypeEnum.WORLD_PADEL_TOUR].RankingLastUpdate = DateTime.Now;
                 DataInMemory.LastUpdateDate = DateTime.Now;
             }
 
