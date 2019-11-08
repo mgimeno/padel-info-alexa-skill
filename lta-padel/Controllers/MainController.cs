@@ -41,9 +41,14 @@ namespace lta_padel.Controllers
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
-            if (rankingCategory == null || !rankingCategory.Players.Any())
+            if (rankingCategory == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return $"{ranking.Name} {Translations.Get(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
+            }
+
+            if (!rankingCategory.Players.Any())
+            {
+                return $"{ranking.Name}. {Translations.Get(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
             }
 
             var result = $"{ranking.Name}. ";
@@ -69,9 +74,13 @@ namespace lta_padel.Controllers
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
-            if (rankingCategory == null || !rankingCategory.Players.Any())
+            if (rankingCategory == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return $"{ranking.Name} {Translations.Get(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
+            }
+
+            if (!rankingCategory.Players.Any()) {
+                return $"{ranking.Name}. {Translations.Get(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
             }
 
             var result = $"{ranking.Name}. ";
@@ -84,6 +93,7 @@ namespace lta_padel.Controllers
 
         [HttpGet]
         public ActionResult<string> GetTournaments([FromQuery] int languageId = (int)LanguageEnum.ENGLISH, int rankingTypeId = (int)RankingTypeEnum.WORLD_PADEL_TOUR, int numberOfFutureTournaments = 1)
+
         {
 
             var ranking = DataInMemory.Rankings.FirstOrDefault(r => r.Type == (RankingTypeEnum)rankingTypeId);
@@ -95,7 +105,7 @@ namespace lta_padel.Controllers
 
             if (!ranking.Tournaments.Any())
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return Translations.Get(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
             }
 
             var now = DateTime.Now;

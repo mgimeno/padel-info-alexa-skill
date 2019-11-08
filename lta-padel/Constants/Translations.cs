@@ -75,7 +75,19 @@ namespace lta_padel.Constants
 
              new TranslationModel(TranslationEnum.TO_TIME,
                 "to",
-                "al")
+                "al"),
+
+              new TranslationModel(TranslationEnum.NO_NEXT_TOURNAMENTS,
+                "There are no tournaments in the near future.",
+                "No hay torneos próximamente."),
+
+              new TranslationModel(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY,
+                "does not have a ranking for this category.",
+                "no tiene un ranking para esta categoría."),
+
+              new TranslationModel(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS,
+                "Currently there is no players in this category.",
+                "Actualmente no hay jugadores en esta categoría.")
 
             };
 

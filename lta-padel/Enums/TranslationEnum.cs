@@ -19,6 +19,9 @@ namespace lta_padel.Enums
         WITH = 12,
         IN = 13,
         FROM_TIME = 14,
-        TO_TIME =15
+        TO_TIME = 15,
+        NO_NEXT_TOURNAMENTS = 16,
+        RANKING_DOES_NOT_HAVE_CATEGORY = 17,
+        CATEGORY_DOES_NOT_HAVE_PLAYERS = 18
     }
 }
