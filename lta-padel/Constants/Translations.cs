@@ -27,7 +27,7 @@ namespace lta_padel.Constants
 
              new TranslationModel(TranslationEnum.NEXT_TOURNAMENTS,
                 "Next tournaments",
-                "Proximos torneos"),
+                "Próximos torneos"),
 
              new TranslationModel(TranslationEnum.RECORDS_LAST_UPDATED_ON,
                 "My records were last updated on",
@@ -35,7 +35,7 @@ namespace lta_padel.Constants
 
              new TranslationModel(TranslationEnum.NO_PLAYER_IS_IN_NUMBER,
                 "No player is in number",
-                "Ningun jugador esta en el numero"),
+                "Ningún jugador está en el número"),
 
              new TranslationModel(TranslationEnum.ALL_OF_THEM_WITH,
                 "All of them with",
@@ -51,11 +51,11 @@ namespace lta_padel.Constants
 
              new TranslationModel(TranslationEnum.PLAYERS_AT_NUMBER,
                 "players at number",
-                "jugadores en el numero"),
+                "jugadores en el número"),
 
              new TranslationModel(TranslationEnum.NUMBER,
                 "number",
-                "numero"),
+                "número"),
 
              new TranslationModel(TranslationEnum.IS,
                 "is",

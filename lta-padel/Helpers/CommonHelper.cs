@@ -231,7 +231,7 @@ namespace lta_padel.Helpers
                     switch (location)
                     {
                         case "european union":
-                            result = "la union Europea";
+                            result = "la Unión Europea";
                             break;
                         case "northern ireland":
                             result = "irlanda del norte";
@@ -252,7 +252,7 @@ namespace lta_padel.Helpers
                             result = "australia";
                             break;
                         case "belgium":
-                            result = "belgica";
+                            result = "bélgica";
                             break;
                         case "bulgaria":
                             result = "bulgaria";
@@ -294,10 +294,10 @@ namespace lta_padel.Helpers
                             result = "lituania";
                             break;
                         case "mexico":
-                            result = "mexico";
+                            result = "méxico";
                             break;
                         case "the netherlands":
-                            result = "los paises bajos";
+                            result = "los países bajos";
                             break;
                         case "norway":
                             result = "noruega";
@@ -321,7 +321,7 @@ namespace lta_padel.Helpers
                             result = "suecia";
                             break;
                         case "united states of america":
-                            result = "los estados unidos de america";
+                            result = "los estados unidos de américa";
                             break;
                         case "uruguay":
                             result = "uruguay";
