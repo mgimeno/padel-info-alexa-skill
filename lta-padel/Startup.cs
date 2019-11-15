@@ -37,6 +37,11 @@ namespace lta_padel
 
             app.UseForwardedHeaders();
 
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllerRoute("default", "{controller=Status}/{action=Status}/{id?}");
+            });
             
         }
     }

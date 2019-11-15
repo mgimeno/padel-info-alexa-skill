@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

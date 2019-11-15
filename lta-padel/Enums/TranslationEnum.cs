@@ -4,7 +4,7 @@ namespace lta_padel.Enums
 {
     public enum TranslationEnum
     {
-        NO_DATA_AVAILABLE = 0,
+        RANKING_DOES_NOT_EXIST = 0,
         TOURNAMENTS_ON_THE = 1,
         CURRENTLY_BEING_PLAYED = 2,
         NEXT_TOURNAMENTS = 3,
@@ -22,6 +22,7 @@ namespace lta_padel.Enums
         TO_TIME = 15,
         NO_NEXT_TOURNAMENTS = 16,
         RANKING_DOES_NOT_HAVE_CATEGORY = 17,
-        CATEGORY_DOES_NOT_HAVE_PLAYERS = 18
+        CATEGORY_DOES_NOT_HAVE_PLAYERS = 18,
+        NO_DATA_AVAILABLE = 19
     }
 }

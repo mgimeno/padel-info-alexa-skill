@@ -36,7 +36,7 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
@@ -69,7 +69,7 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
@@ -100,7 +100,7 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             if (!ranking.Tournaments.Any())
@@ -149,7 +149,7 @@ namespace lta_padel.Controllers
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return Translations.Get(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
             }
 
             return result;

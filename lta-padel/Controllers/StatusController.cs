@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace lta_padel.Controllers
@@ -12,9 +8,9 @@ namespace lta_padel.Controllers
     public class StatusController : ControllerBase
     {
 
-        private readonly IHostingEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
 
-        public StatusController(IHostingEnvironment environment)
+        public StatusController(IWebHostEnvironment environment)
         {
             _environment = environment;
         }
