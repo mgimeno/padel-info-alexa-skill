@@ -176,7 +176,7 @@ namespace lta_padel.Controllers
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             long elapsedSeconds;
-            HtmlNode debugNode = null; //todo delete
+            //HtmlNode debugNode = null; //todo delete
 
             try
             {
@@ -198,11 +198,11 @@ namespace lta_padel.Controllers
 
                 foreach (var tournamentCardNote in tournamentCardsNodes)
                 {
-                    debugNode = tournamentCardNote;
-                    if (debugNode.Line == 325)
-                    {
-                        var debugThisOne = true;
-                    }
+                    //debugNode = tournamentCardNote;
+                    //if (debugNode.Line == 325)
+                    //{
+                    //    var debugThisOne = true;
+                    //}
 
                     //todo some of them contain h3 instead... 
                     var h4Nodes = tournamentCardNote.SelectNodes(".//h4");
@@ -383,7 +383,7 @@ namespace lta_padel.Controllers
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             long elapsedSeconds;
-            HtmlNode debugNode = null; //todo delete
+            //HtmlNode debugNode = null; //todo delete
 
             try
             {
@@ -405,11 +405,11 @@ namespace lta_padel.Controllers
 
                 foreach (var tournamentCardNote in tournamentCardsNodes)
                 {
-                    debugNode = tournamentCardNote;
-                    if (debugNode.Line == 325)
-                    {
-                        var debugThisOne = true;
-                    }
+                    //debugNode = tournamentCardNote;
+                    //if (debugNode.Line == 325)
+                    //{
+                    //    var debugThisOne = true;
+                    //}
 
                     var h3Nodes = tournamentCardNote.SelectNodes(".//h3");
                     var pNodes = tournamentCardNote.SelectNodes(".//p");
