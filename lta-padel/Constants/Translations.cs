@@ -7,11 +7,12 @@ namespace lta_padel.Constants
 {
     public static class Translations
     {
-        public static string Get(TranslationEnum translationId, int languageId) {
+        public static string Get(TranslationEnum translationId, int languageId)
+        {
 
             //todo move this outside or somwhere el else
 
-            List<TranslationModel> List = new List<TranslationModel> {
+            var list = new List<TranslationModel> {
 
             new TranslationModel(TranslationEnum.NO_DATA_AVAILABLE,
                 "Sorry, there was a problem. Please try again in a few minutes",
@@ -91,10 +92,17 @@ namespace lta_padel.Constants
 
             };
 
-        var translation = List.Where(t => t.Id == translationId).FirstOrDefault();
+            var translation = list.Where(t => t.Id == translationId).FirstOrDefault();
 
-            return translation.Values[languageId];
-        
+            if (translation != null)
+            {
+                return translation.Values[languageId];
+            }
+            else {
+                return translationId.ToString();
+            }
+            
+
         }
 
     }

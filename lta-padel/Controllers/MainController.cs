@@ -18,8 +18,8 @@ namespace lta_padel.Controllers
     [ApiController]
     public class MainController : ControllerBase
     {
-        private const string LTAPadelRankingsUrl = "https://www.britishpadel.org.uk/rankings/";
-        private const string LTAPadelTournamentsUrl = "https://www.britishpadel.org.uk/tournaments/";
+        private const string LTAPadelRankingsUrl = "https://www.ltapadel.org.uk/rankings/";
+        private const string LTAPadelTournamentsUrl = "https://www.ltapadel.org.uk/tournaments/";
         private const int LTAPadelFirstTableRowThatContainsAPlayerIndex = 4;
 
         private const string WorldPadelTourTournamentsUrl = "https://www.worldpadeltour.com/torneos/";
@@ -538,9 +538,8 @@ namespace lta_padel.Controllers
                     {
                         var positionNode = playerNode.SelectSingleNode(".//td[1]");
                         var nameNode = playerNode.SelectSingleNode(".//td[2]");
-                        var surnameNode = playerNode.SelectSingleNode(".//td[3]");
-                        var countryNode = playerNode.SelectSingleNode(".//td[4]");
-                        var pointsNode = playerNode.SelectSingleNode(".//td[5]");
+                        var countryNode = playerNode.SelectSingleNode(".//td[3]");
+                        var pointsNode = playerNode.SelectSingleNode(".//td[4]");
 
                         if (positionNode != null
                                 && !string.IsNullOrWhiteSpace(positionNode.InnerText)
@@ -552,8 +551,8 @@ namespace lta_padel.Controllers
                             players.Add(new PlayerModel
                             {
                                 Position = int.Parse(positionNode.InnerText),
-                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerText + (surnameNode != null && !string.IsNullOrWhiteSpace(surnameNode.InnerText) ? " " + surnameNode.InnerText : "")),
-                                Country = CommonHelper.GetCleanedUpText(countryNode != null ? countryNode.InnerText : ""),
+                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerText),
+                                Country = CommonHelper.GetCleanedUpText(countryNode != null ? CommonHelper.GetCountryFromNationality(countryNode.InnerText) : ""),
                                 Points = pointsNode.InnerText.Replace(",", "").Trim()
                             });
 

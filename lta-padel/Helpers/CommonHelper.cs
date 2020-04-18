@@ -230,6 +230,31 @@ namespace lta_padel.Helpers
 
                     switch (location)
                     {
+
+                        case "british":
+                            result = "Reino Unido";
+                            break;
+                        case "spanish":
+                            result = "España";
+                            break;
+                        case "portuguese":
+                            result = "Portugal";
+                            break;
+                        case "new zealander":
+                            result = "Nueva Zelanda";
+                            break;
+                        case "italian":
+                            result = "Italia";
+                            break;
+                        case "paraguayan":
+                            result = "Paraguay";
+                            break;
+                        case "argentinian":
+                            result = "Argentina";
+                            break;
+
+
+
                         case "european union":
                             result = "la Unión Europea";
                             break;
@@ -336,6 +361,40 @@ namespace lta_padel.Helpers
                 }
 
             }
+        }
+
+        public static string GetCountryFromNationality(string nationality)
+        {
+            nationality = nationality.ToLower().Trim();
+
+            var result = nationality;
+
+            switch (nationality)
+            {
+                case "british":
+                    result = "United Kingdom";
+                    break;
+                case "spanish":
+                    result = "Spain";
+                    break;
+                case "portuguese":
+                    result = "Portugal";
+                    break;
+                case "new zealander":
+                    result = "New Zealand";
+                    break;
+                case "italian":
+                    result = "Italy";
+                    break;
+                case "paraguayan":
+                    result = "Paraguay";
+                    break;
+                case "argentinian":
+                    result = "Argentina";
+                    break;
+            }
+
+            return result;
         }
 
         public static string GetCleanedUpText(string text)
