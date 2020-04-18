@@ -14,9 +14,9 @@ namespace lta_padel.Constants
 
             var list = new List<TranslationModel> {
 
-            new TranslationModel(TranslationEnum.NO_DATA_AVAILABLE,
-                "Sorry, there was a problem. Please try again in a few minutes",
-                "Lo siento, ha habido un problema. Prueba de nuevo dentro de unos minutos"),
+            new TranslationModel(TranslationEnum.RANKING_DOES_NOT_EXIST,
+                "This ranking does not exist",
+                "Este ranking no existe"),
 
             new TranslationModel(TranslationEnum.TOURNAMENTS_ON_THE,
                 "Tournaments on the",
@@ -88,7 +88,11 @@ namespace lta_padel.Constants
 
               new TranslationModel(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS,
                 "Currently there is no players in this category.",
-                "Actualmente no hay jugadores en esta categoría.")
+                "Actualmente no hay jugadores en esta categoría."),
+
+               new TranslationModel(TranslationEnum.NO_DATA_AVAILABLE,
+                "Data currently not available, please try again in a few minutes.",
+                "Datos actualmente no disponibles, por favor pruebe de nuevo en unos minutos.")
 
             };
 

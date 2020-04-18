@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace lta_padel
@@ -17,10 +18,15 @@ namespace lta_padel
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-           WebHost.CreateDefaultBuilder(args)
-           .UseUrls("http://127.0.0.1:38000")
-               .UseStartup<Startup>().ConfigureAppConfiguration((builderContext, config) =>
+        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+           Host.CreateDefaultBuilder(args)
+           .ConfigureWebHostDefaults(webBuilder => { 
+           
+
+               webBuilder.UseStartup<Startup>()
+               .UseUrls("http://127.0.0.1:38000")
+
+               .ConfigureAppConfiguration((builderContext, config) =>
                {
                    IWebHostEnvironment env = builderContext.HostingEnvironment;
 
@@ -29,5 +35,9 @@ namespace lta_padel
 
                    config.AddEnvironmentVariables();
                });
+
+           });
+           
+               
     }
 }
