@@ -8,12 +8,7 @@ namespace PadelInfo.Helpers
     public static class TranslationHelper
     {
 
-        public static string Translate(TranslationEnum translationId, int languageId)
-        {
-            //todo this is not a constant file.
-            //todo move this outside or somwhere el else
-
-            var list = new List<TranslationModel> {
+        private static List<TranslationModel> translationsList = new List<TranslationModel> {
 
             new TranslationModel(TranslationEnum.RANKING_DOES_NOT_EXIST,
                 "This ranking does not exist",
@@ -97,7 +92,9 @@ namespace PadelInfo.Helpers
 
             };
 
-            var translation = list.Where(t => t.Id == translationId).FirstOrDefault();
+        public static string Translate(TranslationEnum translationId, int languageId)
+        {
+            var translation = translationsList.Where(t => t.Id == translationId).FirstOrDefault();
 
             if (translation != null)
             {

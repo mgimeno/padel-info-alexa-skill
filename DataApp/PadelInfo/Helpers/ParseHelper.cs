@@ -1,8 +1,5 @@
 ﻿using PadelInfo.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PadelInfo.Helpers
 {
@@ -120,7 +117,6 @@ namespace PadelInfo.Helpers
 
         public static string GetCountryNameFromFlagName(string flagName)
         {
-            //todo mirar cuales paises hay jugadores y me he dejado
 
             var result = string.Empty;
 
@@ -865,10 +861,6 @@ namespace PadelInfo.Helpers
 
         public static string GetCleanedUpText(string text)
         {
-
-            //todo strip html from playername
-            //todo replace enie con algo que suene igual?
-            //Quizas guardar nombre en ingles y en espaniol if country is spain
 
             if (string.IsNullOrWhiteSpace(text))
             {
