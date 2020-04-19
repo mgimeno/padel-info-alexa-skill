@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Text;
-using lta_padel.Constants;
 
 namespace lta_padel.Controllers
 {
@@ -36,19 +35,19 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
+                return TranslationHelper.Translate(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
             if (rankingCategory == null)
             {
-                return $"{ranking.Name} {Translations.Get(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
+                return $"{ranking.Name} {TranslationHelper.Translate(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
             }
 
             if (!rankingCategory.Players.Any())
             {
-                return $"{ranking.Name}. {Translations.Get(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
+                return $"{ranking.Name}. {TranslationHelper.Translate(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
             }
 
             var result = $"{ranking.Name}. ";
@@ -69,18 +68,18 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
+                return TranslationHelper.Translate(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             var rankingCategory = ranking.Categories.FirstOrDefault(c => c.Type == (RankingCategoryTypeEnum)rankingCategoryId);
 
             if (rankingCategory == null)
             {
-                return $"{ranking.Name} {Translations.Get(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
+                return $"{ranking.Name} {TranslationHelper.Translate(TranslationEnum.RANKING_DOES_NOT_HAVE_CATEGORY, languageId)}";
             }
 
             if (!rankingCategory.Players.Any()) {
-                return $"{ranking.Name}. {Translations.Get(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
+                return $"{ranking.Name}. {TranslationHelper.Translate(TranslationEnum.CATEGORY_DOES_NOT_HAVE_PLAYERS, languageId)}";
             }
 
             var result = $"{ranking.Name}. ";
@@ -100,17 +99,17 @@ namespace lta_padel.Controllers
 
             if (ranking == null)
             {
-                return Translations.Get(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
+                return TranslationHelper.Translate(TranslationEnum.RANKING_DOES_NOT_EXIST, languageId);
             }
 
             if (!ranking.Tournaments.Any())
             {
-                return Translations.Get(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
+                return TranslationHelper.Translate(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
             }
 
             var now = DateTime.Now;
 
-            var result = $"{Translations.Get(TranslationEnum.TOURNAMENTS_ON_THE, languageId)} {ranking.Name}";
+            var result = $"{TranslationHelper.Translate(TranslationEnum.TOURNAMENTS_ON_THE, languageId)} {ranking.Name}";
 
             var currentTournaments = ranking.Tournaments
                 .Where(t => ((CommonHelper.IsToday(t.StartDate) || t.StartDate < now) && (CommonHelper.IsToday(t.EndDate) || t.EndDate > now)))
@@ -120,11 +119,11 @@ namespace lta_padel.Controllers
             if (currentTournaments.Any())
             {
 
-                result += $". {Translations.Get(TranslationEnum.CURRENTLY_BEING_PLAYED, languageId)}";
+                result += $". {TranslationHelper.Translate(TranslationEnum.CURRENTLY_BEING_PLAYED, languageId)}";
 
                 foreach (var currentTournament in currentTournaments)
                 {
-                    result += $". {currentTournament.Name} {(!string.IsNullOrWhiteSpace(currentTournament.Location) ? $"{Translations.Get(TranslationEnum.IN, languageId)} {CommonHelper.TranslateLocation(languageId, currentTournament.Location)}" : "")} {Translations.Get(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.StartDate)} {Translations.Get(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.EndDate)}";
+                    result += $". {currentTournament.Name} {(!string.IsNullOrWhiteSpace(currentTournament.Location) ? $"{TranslationHelper.Translate(TranslationEnum.IN, languageId)} {TranslationHelper.TranslateLocation(currentTournament.Location, languageId)}" : "")} {TranslationHelper.Translate(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.StartDate)} {TranslationHelper.Translate(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, currentTournament.EndDate)}";
                 }
             }
 
@@ -139,17 +138,17 @@ namespace lta_padel.Controllers
             if (futureTournaments.Any())
             {
 
-                result += $". {Translations.Get(TranslationEnum.NEXT_TOURNAMENTS, languageId)}";
+                result += $". {TranslationHelper.Translate(TranslationEnum.NEXT_TOURNAMENTS, languageId)}";
 
                 foreach (var futureTournament in futureTournaments)
                 {
-                    result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"{Translations.Get(TranslationEnum.IN, languageId)} {CommonHelper.TranslateLocation(languageId, futureTournament.Location)}" : "")} {Translations.Get(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.StartDate)} {Translations.Get(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.EndDate)}";
+                    result += $". {futureTournament.Name} {(!string.IsNullOrWhiteSpace(futureTournament.Location) ? $"{TranslationHelper.Translate(TranslationEnum.IN, languageId)} {TranslationHelper.TranslateLocation(futureTournament.Location, languageId)}" : "")} {TranslationHelper.Translate(TranslationEnum.FROM_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.StartDate)} {TranslationHelper.Translate(TranslationEnum.TO_TIME, languageId)} {CommonHelper.GetFormattedTextDate(languageId, futureTournament.EndDate)}";
                 }
             }
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                return Translations.Get(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
+                return TranslationHelper.Translate(TranslationEnum.NO_NEXT_TOURNAMENTS, languageId);
             }
 
             return result;
@@ -162,11 +161,11 @@ namespace lta_padel.Controllers
 
             if (DataInMemory.LastUpdateDate == null)
             {
-                return Translations.Get(TranslationEnum.NO_DATA_AVAILABLE, languageId);
+                return TranslationHelper.Translate(TranslationEnum.NO_DATA_AVAILABLE, languageId);
             }
             else
             {
-                return $"{Translations.Get(TranslationEnum.RECORDS_LAST_UPDATED_ON, languageId)} {CommonHelper.GetFormattedTextDate(languageId, DataInMemory.LastUpdateDate.Value)}";
+                return $"{TranslationHelper.Translate(TranslationEnum.RECORDS_LAST_UPDATED_ON, languageId)} {CommonHelper.GetFormattedTextDate(languageId, DataInMemory.LastUpdateDate.Value)}";
             }
 
         }
@@ -217,7 +216,7 @@ namespace lta_padel.Controllers
                         if (nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerHtml) && dateNode != null)
                         {
 
-                            var dateModel = CommonHelper.ParseLTATournamentDates(dateNode.InnerText);
+                            var dateModel = ParseHelper.ParseLTATournamentDates(dateNode.InnerText);
 
                             if (dateModel.StartDate != null && dateModel.EndDate != null)
                             {
@@ -225,8 +224,8 @@ namespace lta_padel.Controllers
                                 if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
-                                    tournament.Name = CommonHelper.GetCleanedUpText(nameNode.InnerHtml);
-                                    tournament.Location = CommonHelper.GetCleanedUpText(locationNode != null && !string.IsNullOrWhiteSpace(locationNode.InnerHtml) ? locationNode.InnerHtml : null);
+                                    tournament.Name = ParseHelper.GetCleanedUpText(nameNode.InnerHtml);
+                                    tournament.Location = ParseHelper.GetCleanedUpText(locationNode != null && !string.IsNullOrWhiteSpace(locationNode.InnerHtml) ? locationNode.InnerHtml : null);
                                     tournament.StartDate = dateModel.StartDate.Value;
                                     tournament.EndDate = dateModel.EndDate.Value;
 
@@ -377,7 +376,6 @@ namespace lta_padel.Controllers
 
         }
 
-
         [HttpGet]
         public async Task<ActionResult<string>> UpdateWorldPadelTourTournaments()
         {
@@ -422,14 +420,14 @@ namespace lta_padel.Controllers
                         if (nameNode != null && !string.IsNullOrWhiteSpace(nameNode.InnerHtml) && dateNode != null)
                         {
 
-                            var dateModel = CommonHelper.ParseWorldPadelTourTournamentDates(dateNode.InnerText);
+                            var dateModel = ParseHelper.ParseWorldPadelTourTournamentDates(dateNode.InnerText);
 
                             if (dateModel.StartDate != null && dateModel.EndDate != null)
                             {
                                 if (dateModel.EndDate.Value >= now)
                                 {
                                     var tournament = new TournamentModel();
-                                    tournament.Name = CommonHelper.GetCleanedUpText(nameNode.InnerHtml);
+                                    tournament.Name = ParseHelper.GetCleanedUpText(nameNode.InnerHtml);
                                     tournament.Location = null;
                                     tournament.StartDate = dateModel.StartDate.Value;
                                     tournament.EndDate = dateModel.EndDate.Value;
@@ -502,13 +500,13 @@ namespace lta_padel.Controllers
                         {
                             var flagCode = flagNode.Attributes.FirstOrDefault(a => a.Name == "src")?.Value.Replace("https://www.worldpadeltour.com/media/images/flags/", "").Replace(".png", "");
 
-                            var country = CommonHelper.GetEnglishCountryNameFromFlagName(flagCode);
+                            var country = ParseHelper.GetCountryNameFromFlagName(flagCode);
 
                             players.Add(new PlayerModel
                             {
                                 Position = int.Parse(positionNode.InnerText),
-                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerHtml.Replace("<br>", " ")),
-                                Country = CommonHelper.GetCleanedUpText(country),
+                                FullName = ParseHelper.GetCleanedUpText(nameNode.InnerHtml.Replace("<br>", " ")),
+                                Country = ParseHelper.GetCleanedUpText(country),
                                 Points = pointsNode.InnerText.Replace(",","").Trim()
                             });
 
@@ -551,8 +549,8 @@ namespace lta_padel.Controllers
                             players.Add(new PlayerModel
                             {
                                 Position = int.Parse(positionNode.InnerText),
-                                FullName = CommonHelper.GetCleanedUpText(nameNode.InnerText),
-                                Country = CommonHelper.GetCleanedUpText(countryNode != null ? CommonHelper.GetCountryFromNationality(countryNode.InnerText) : ""),
+                                FullName = ParseHelper.GetCleanedUpText(nameNode.InnerText),
+                                Country = ParseHelper.GetCleanedUpText(countryNode != null ? ParseHelper.GetCountryFromNationality(countryNode.InnerText) : ""),
                                 Points = pointsNode.InnerText.Replace(",", "").Trim()
                             });
 
