@@ -30,13 +30,13 @@ driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 time.sleep(20)
 html_source = driver.page_source
 data = html_source.encode('utf-8')
-file = open("padel-info-world-padel-tour-html.txt","wb")
+file = open("/home/pi/Websites/padel-info-world-padel-tour-html.txt","wb")
 file.write(data)
 file.close()
 driver.quit()
 display.stop()
 files = {
-    'file': ('padel-info-world-padel-tour-html.txt', open('padel-info-world-padel-tour-html.txt', 'rb')),
+    'file': ('padel-info-world-padel-tour-html.txt', open('/home/pi/Websites/padel-info-world-padel-tour-html.txt', 'rb')),
 }
 response = requests.post('http://localhost:38000/api/UpdateWorldPadelTourRankingFromFileUpload', files=files)
 print (response)

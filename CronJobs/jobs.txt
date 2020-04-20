@@ -1,11 +1,11 @@
 ﻿#LTA Padel - Update Ranking
-0 6 * * * flock -xn /home/pi/Websites/cron-jobs/padel-info-update-ranking.lck -c /home/pi/Websites/cron-jobs/padel-info-update-ranking.sh >> /dev/null 2>&1
+0 6 * * * flock -xn /home/pi/Websites/raspberry/cron-jobs/padel-info-update-ranking.lck -c /home/pi/Websites/raspberry/cron-jobs/padel-info-update-ranking.sh >> /dev/null 2>&1
 
 #LTA Padel - Update Tournaments
-15 6 * * * flock -xn /home/pi/Websites/cron-jobs/padel-info-update-tournaments.lck -c /home/pi/Websites/cron-jobs/padel-info-update-tournaments.sh >> /dev/null 2>&1
+15 6 * * * flock -xn /home/pi/Websites/raspberry/cron-jobs/padel-info-update-tournaments.lck -c /home/pi/Websites/raspberry/cron-jobs/padel-info-update-tournaments.sh >> /dev/null 2>&1
 
 #World Padel Tour - Update Ranking
-30 6 * * * flock -xn /home/pi/Websites/cron-jobs/padel-info-update-world-padel-tour-ranking.lck -c /home/pi/Websites/padel-info-world-padel-tour-ranking-script.py >> /dev/null 2>&1
+30 6 * * * flock -xn /home/pi/Websites/raspberry/cron-jobs/padel-info-update-world-padel-tour-ranking.lck -c /home/pi/Websites/padel-info-world-padel-tour-ranking-script.py >> /dev/null 2>&1
 
 #World Padel Tour - Update Tournaments
-45 6 * * * flock -xn /home/pi/Websites/cron-jobs/padel-infoworld-padel-tour-update-tournaments.lck -c /home/pi/Websites/cron-jobs/padel-info-world-padel-tour-update-tournaments.sh >> /dev/null 2>&1
+45 6 * * * flock -xn /home/pi/Websites/raspberry/cron-jobs/padel-infoworld-padel-tour-update-tournaments.lck -c /home/pi/Websites/raspberry/cron-jobs/padel-info-world-padel-tour-update-tournaments.sh >> /dev/null 2>&1
